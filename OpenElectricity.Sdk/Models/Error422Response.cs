@@ -10,7 +10,7 @@ namespace OpenElectricity.Sdk.Models
         /// <summary>
         /// Detail
         /// </summary>
-        public ErrorDetail? Detail { get; set; }
+        public List<ErrorDetail>? Detail { get; set; }
     }
 
     /// <summary>

@@ -65,7 +65,7 @@ namespace OpenElectricity.Sdk
                     Error422Response error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
                         ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
 
-                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.Msg}");
+                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.FirstOrDefault()?.Msg}");
                 }
 
                 result = await response.Content.ReadFromJsonAsync<APIResponse<T>>(_serializerOptions, cancellationToken)
