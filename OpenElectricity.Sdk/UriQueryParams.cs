@@ -35,7 +35,7 @@ namespace OpenElectricity.Sdk
             {
                 _query.Insert(0, '?');
             }
-            return HttpUtility.UrlEncode(_query.ToString());
+            return _query.ToString();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace OpenElectricity.Sdk.Models
 {
-    public class UserDto
+    public class User
     {
         public required string Id { get; set; }
         public string? Full_Name { get; set; }
@@ -8,7 +8,7 @@
         public string? Owner_Id { get; set; }
         public UserPlan? Plan { get; set; }
         public UserRateLimit? Rate_Limit { get; set; }
-        public object? Unkey_Meta { get; set; }
+        public object? Meta { get; set; }
         public List<string> Roles { get; set; } = [];
     }
 

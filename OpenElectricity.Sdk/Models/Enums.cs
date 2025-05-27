@@ -39,8 +39,7 @@ namespace OpenElectricity.Sdk.Models
             return type.GetField(name)?
                 .GetCustomAttributes(false)
                 .OfType<JsonStringEnumMemberNameAttribute>()
-                .SingleOrDefault()?
-                .ToString() ?? "";
+                .SingleOrDefault()?.Name.ToString() ?? "";
         }
     }
 

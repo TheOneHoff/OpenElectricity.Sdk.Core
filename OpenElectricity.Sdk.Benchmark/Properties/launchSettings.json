@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OpenElectricity.Sdk.Benchmark": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

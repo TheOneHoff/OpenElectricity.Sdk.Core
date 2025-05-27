@@ -1,15 +1,26 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenElectricity.Sdk.Models;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk
 {
     public class OpenElectricityClient
     {
         readonly HttpClient _httpClient;
-
+        readonly string _apiKey;
         readonly JsonSerializerOptions _serializerOptions;
+
+        readonly List<HttpStatusCode> RedirectStatusCodes = 
+        [
+            HttpStatusCode.Redirect,
+            HttpStatusCode.MovedPermanently,
+            HttpStatusCode.Found,
+            HttpStatusCode.SeeOther,
+            HttpStatusCode.TemporaryRedirect
+        ];
 
         /// <summary>
         /// Create an OpenElectricityClient with default settings
@@ -19,10 +30,11 @@ namespace OpenElectricity.Sdk
         {
             _httpClient = new()
             {
-                BaseAddress = options.BaseUrl
+                BaseAddress = options.BaseUrl,
             };
-            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.ApiKey);
-            _serializerOptions = options.SerializerOptions;
+            _apiKey = options.ApiKey;
+            
+            _serializerOptions = new StaticJsonSerializerOptions().Default;
         }
 
         /// <summary>
@@ -34,36 +46,46 @@ namespace OpenElectricity.Sdk
         {
             _httpClient = httpClient;
             _httpClient.BaseAddress = options.Value.BaseUrl;
-            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.Value.ApiKey);
-            _serializerOptions = options.Value.SerializerOptions;
+            _apiKey = options.Value.ApiKey;
+            _serializerOptions = new StaticJsonSerializerOptions().Default;
         }
 
         private async Task<T> SendAsync<T>(
-            HttpRequestMessage request,
-            UriQueryParams parameters,
+            HttpMethod method,
+            string relativePath,
+            UriQueryParams queryParams,
             CancellationToken cancellationToken)
         {
-            request.RequestUri = new($"{request.RequestUri!.PathAndQuery}{parameters}");
+            HttpRequestMessage request = new(method, $"{relativePath}{queryParams}");
+            request.Headers.Authorization = new("Bearer", _apiKey);
 
             var response = await _httpClient.SendAsync(request, cancellationToken);
-            if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableContent)
+            APIResponse<T> result;
+            try
             {
-                Error422Response error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
+                if (response.StatusCode == HttpStatusCode.UnprocessableContent)
+                {
+                    Error422Response error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
+                        ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+
+                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.Msg}");
+                }
+
+                result = await response.Content.ReadFromJsonAsync<APIResponse<T>>(_serializerOptions, cancellationToken)
                     ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
 
-                throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.Msg}");
+                if (!result.Success)
+                {
+                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {result.Error}");
+                }
+                if (result.Data is null)
+                {
+                    throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+                }
             }
-
-            APIResponse<T> result = await response.Content.ReadFromJsonAsync<APIResponse<T>>(_serializerOptions, cancellationToken)
-                ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
-
-            if (!result.Success)
+            catch (Exception ex)
             {
-                throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {result.Error}");
-            }
-            if (result.Data is null)
-            {
-                throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+                throw new Exception($"Unhandled exception when executing {request.RequestUri}. Response: {await response.Content.ReadAsStringAsync(cancellationToken)}", ex);
             }
 
             return result.Data;
@@ -77,7 +99,7 @@ namespace OpenElectricity.Sdk
         /// <returns></returns>
         /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
         /// <exception cref="JsonException">If there is an error when deserializing</exception>
-        public async Task<UserDto> GetUserAsync(
+        public async Task<User> GetUserAsync(
             bool withClerk = true,
             CancellationToken cancellationToken = default
             )
@@ -85,8 +107,7 @@ namespace OpenElectricity.Sdk
             UriQueryParams parameters = new();
             parameters.Add("with_clerk", withClerk.ToString());
 
-            HttpRequestMessage request = new(HttpMethod.Get, "me");
-            return await SendAsync<UserDto>(request, parameters, cancellationToken);
+            return await SendAsync<User>(HttpMethod.Get, "me", parameters, cancellationToken);
         }
 
         /// <summary>
@@ -120,8 +141,7 @@ namespace OpenElectricity.Sdk
             parameters.Add("network_region", networkRegion);
             parameters.Add("with_clerk", withClerk.ToString());
 
-            HttpRequestMessage request = new(HttpMethod.Get, "facilities");
-            return await SendAsync<List<Facility>>(request, parameters, cancellationToken);
+            return await SendAsync<List<Facility>>(HttpMethod.Get, "facilities", parameters, cancellationToken);
         }
 
         public async Task<NetworkData> GetMarketDataAsync(
@@ -142,8 +162,7 @@ namespace OpenElectricity.Sdk
             parameters.Add("primary_grouping", primaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            HttpRequestMessage request = new(HttpMethod.Get, $"market/network/{networkCode}");
-            return await SendAsync<NetworkData>(request, parameters, cancellationToken);
+            return await SendAsync<NetworkData>(HttpMethod.Get, $"market/network/{networkCode}", parameters, cancellationToken);
         }
 
         public async Task<NetworkData> GetGenerationDataAsync(
@@ -166,8 +185,7 @@ namespace OpenElectricity.Sdk
             parameters.Add("secondary_grouping", secondaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            HttpRequestMessage request = new(HttpMethod.Get, $"data/network/{networkCode}");
-            return await SendAsync<NetworkData>(request, parameters, cancellationToken);
+            return await SendAsync<NetworkData>(HttpMethod.Get, $"data/network/{networkCode}", parameters, cancellationToken);
 
         }
         public async Task<NetworkData> GetFacilityDataAsync(
@@ -188,8 +206,7 @@ namespace OpenElectricity.Sdk
             parameters.Add("date_end", dateEnd?.ToString("u"));
             parameters.Add("with_clerk", withClerk.ToString());
 
-            HttpRequestMessage request = new(HttpMethod.Get, $"data/facilities/{networkCode}");
-            return await SendAsync<NetworkData>(request, parameters, cancellationToken);
+            return await SendAsync<NetworkData>(HttpMethod.Get, $"data/facilities/{networkCode}", parameters, cancellationToken);
         }
     }
 }
