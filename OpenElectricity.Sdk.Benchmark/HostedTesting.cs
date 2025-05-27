@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using OpenElectricity.Sdk.Models;
+using System.Text;
+using System.Threading;
 
 namespace OpenElectricity.Sdk.Benchmark
 {
@@ -38,8 +40,8 @@ namespace OpenElectricity.Sdk.Benchmark
                     networkCode: NetworkCode.NEM,
                     metrics: [DataMetric.energy, DataMetric.power],
                     interval: DataInterval.FiveMinute,
-                    dateStart: DateTimeOffset.Now.AddDays(-1),
-                    dateEnd: DateTimeOffset.Now,
+                    dateStart: DateTime.Now.AddDays(-1),
+                    dateEnd: DateTime.Now,
                     cancellationToken: cancellationToken);
                 _logger.LogDebug("GetFacilityData success");
             }
@@ -55,8 +57,8 @@ namespace OpenElectricity.Sdk.Benchmark
                     networkCode: NetworkCode.NEM,
                     metrics: [MarketMetric.price, MarketMetric.demand],
                     interval: DataInterval.FiveMinute,
-                    dateStart: DateTimeOffset.Now.AddDays(-1),
-                    dateEnd: DateTimeOffset.Now,
+                    dateStart: DateTime.Now.AddDays(-1),
+                    dateEnd: DateTime.Now,
                     cancellationToken: cancellationToken);
                 _logger.LogDebug("GetMarketData success");
             }
@@ -72,8 +74,8 @@ namespace OpenElectricity.Sdk.Benchmark
                     networkCode: NetworkCode.NEM,
                     metrics: [DataMetric.energy, DataMetric.power],
                     interval: DataInterval.FiveMinute,
-                    dateStart: DateTimeOffset.Now.AddDays(-1),
-                    dateEnd: DateTimeOffset.Now,
+                    dateStart: DateTime.Now.AddDays(-1),
+                    dateEnd: DateTime.Now,
                     cancellationToken: cancellationToken);
                 _logger.LogDebug("GetGenerationData success");
             }
@@ -83,6 +85,86 @@ namespace OpenElectricity.Sdk.Benchmark
             }
 
             return;
+        }
+
+        public async Task RunCarbonDataFetchAsync(
+            DateTime start,
+            DateTime end,
+            string folderPath,
+            CancellationToken cancellationToken = default)
+        {
+            NetworkCode networkCode = NetworkCode.NEM;
+            DataMetric metric = DataMetric.energy;
+
+            DateTime currentStart = start;
+            while(currentStart < end)
+            {
+                DateTime currentEnd = currentStart.AddDays(30);
+                if (currentEnd > end)
+                {
+                    currentEnd = end;
+                }
+
+                await Fetch30Days(folderPath, networkCode, metric, currentStart, currentEnd, cancellationToken);
+
+                currentStart = currentStart.AddDays(30);
+            }
+
+            return;
+        }
+
+        private async Task<bool> Fetch30Days(
+            string folderPath,
+            NetworkCode networkCode, 
+            DataMetric metric, 
+            DateTime start, 
+            DateTime end,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var market_data = await _client.GetGenerationDataAsync(
+                    networkCode: networkCode,
+                    metrics: [metric],
+                    interval: DataInterval.OneHour,
+                    dateStart: start,
+                    dateEnd: end,
+                    cancellationToken: cancellationToken);
+
+                var emissions = market_data.FirstOrDefault(r => r.Metric == (Metric)metric)?.Results.FirstOrDefault()?.TimeSeries ?? [];
+
+                string outputFile = $"{networkCode}.{metric}_{start:yyyyMMddHHmmss}-{end:yyyyMMddHHmmss}.csv";
+
+                string filePath = Path.Combine(folderPath, outputFile);
+                FileInfo file = new(filePath);
+                if (file.Directory is not null && !file.Directory.Exists)
+                {
+                    Directory.CreateDirectory(file.Directory.FullName);
+                }
+                if (file.Exists)
+                {
+                    File.Delete(file.FullName);
+                }
+
+                using FileStream fileStream = new(file.FullName, FileMode.Create, FileAccess.ReadWrite);
+                using StreamWriter streamWriter = new(fileStream, Encoding.UTF8);
+
+                string header = "Region, DateTime, Value";
+                streamWriter.WriteLine(header);
+
+                foreach (var tv in emissions)
+                {
+                    streamWriter.WriteLine($"{tv.Timestamp:s}, {tv.Value}");
+                }
+
+                _logger.LogDebug("GetMarketData success");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetMarketData failure");
+                return false;
+            }
+            return true;
         }
     }
 }

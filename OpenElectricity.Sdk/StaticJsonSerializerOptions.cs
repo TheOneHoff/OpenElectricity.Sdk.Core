@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk
 {
-    public class StaticJsonSerializerOptions
+    internal class StaticJsonSerializerOptions
     {
         private JsonSerializerOptions? _default;
         public JsonSerializerOptions Default

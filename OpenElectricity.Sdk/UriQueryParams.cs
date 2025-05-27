@@ -3,7 +3,7 @@ using System.Web;
 
 namespace OpenElectricity.Sdk
 {
-    public class UriQueryParams
+    internal class UriQueryParams
     {
         private readonly StringBuilder _query = new();
 

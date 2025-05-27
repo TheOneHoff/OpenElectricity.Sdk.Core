@@ -12,7 +12,7 @@ namespace OpenElectricity.Sdk.Models
         [JsonPropertyName("date_end")]
         public DateTimeOffset DateEnd { get; set; }
         public Dictionary<string, string> Columns { get; set; } = [];
-        public List<List<JsonElement>> Data { get; set; } = [];
+        public List<List<object>> Data { get; set; } = [];
 
         [JsonIgnore]
         public List<TimeValue> TimeSeries
@@ -22,8 +22,8 @@ namespace OpenElectricity.Sdk.Models
                 List<TimeValue> timeSeries = [];
                 foreach(var entry in Data)
                 {
-                    DateTimeOffset timestamp = entry[0].GetDateTimeOffset();
-                    decimal value = entry[1].GetDecimal();
+                    DateTimeOffset timestamp = ((JsonElement)entry[0]).GetDateTimeOffset();
+                    decimal value = ((JsonElement)entry[1]).GetDecimal();
                     timeSeries.Add(new(timestamp, value));
                 }
                 return timeSeries;

@@ -18,7 +18,11 @@ namespace OpenElectricity.Sdk.Benchmark
             var testing = scope.ServiceProvider.GetService<HostedTesting>();
             if (testing is null) return;
 
-            await testing.RunAsync();
+            await testing.RunCarbonDataFetchAsync(
+                DateTime.Parse("2023-01-01"),
+                DateTime.Parse("2025-01-01"),
+                "C:\\Users\\AlexHoffman\\Downloads\\OpenElectricityData"
+                );
             return;
         }
     }
