@@ -11,35 +11,20 @@ namespace OpenElectricity.Sdk.Helpers
             Type typeToConvert, 
             JsonSerializerOptions options)
         {
-            DateTimeOffset? dateTimeOffset = null;
-            decimal? value = null;
-
-            while(reader.Read())
+            if (reader.TokenType != JsonTokenType.StartArray)
             {
-                JsonElement element;
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.StartArray:
-                        continue;
-                    case JsonTokenType.String:
-                        element = JsonElement.ParseValue(ref reader);
-                        dateTimeOffset = element.GetDateTimeOffset();
-                        break;
-                    case JsonTokenType.Number:
-                        element = JsonElement.ParseValue(ref reader);
-                        value = element.GetDecimal();
-                        break;
-                    case JsonTokenType.EndArray:
-                        if (dateTimeOffset is null || value is null)
-                        {
-                            throw new JsonException();
-                        }
-                        return new(dateTimeOffset.Value, value.Value);
-                    default:
-                        throw new JsonException();
-                }
+                throw new JsonException();
             }
-            throw new JsonException();
+            reader.Read();
+            DateTimeOffset dateTimeOffset = reader.GetDateTimeOffset();
+            reader.Read();
+            decimal value = reader.GetDecimal();
+            reader.Read();
+            if (reader.TokenType != JsonTokenType.EndArray)
+            {
+                throw new JsonException();
+            }
+            return new(dateTimeOffset, value);
         }
 
         public override void Write(
