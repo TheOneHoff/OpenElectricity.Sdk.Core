@@ -3,25 +3,19 @@ using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk.Helpers
 {
-    internal class StaticJsonSerializerOptions
+    internal static class StaticJsonSerializerOptions
     {
-        private JsonSerializerOptions? _default;
-        public JsonSerializerOptions Default
+        public static JsonSerializerOptions GetDefaultOptions()
         {
-            get
+            JsonSerializerOptions _default = new(JsonSerializerDefaults.Web)
             {
-                if (_default is null)
-                {
-                    _default = new(JsonSerializerDefaults.Web)
-                    {
-                        PropertyNameCaseInsensitive = true,
-                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    };
-                    _default.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, false));
-                }
-                return _default;
-            }
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            };
+            _default.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, false));
+
+            return _default;
         }
     }
 }

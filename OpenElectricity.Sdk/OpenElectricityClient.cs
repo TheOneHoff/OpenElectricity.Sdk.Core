@@ -10,12 +10,12 @@ namespace OpenElectricity.Sdk
     public class OpenElectricityClient
     {
         readonly HttpClient _httpClient;
-        readonly JsonSerializerOptions _serializerOptions;
+        readonly JsonSerializerOptions _serializerOptions = StaticJsonSerializerOptions.GetDefaultOptions();
 
         const string DateTimeFormat = "s";
 
         bool hasfirstRequestFinished = false;
-        SemaphoreSlim _semaphore = new(1);
+        readonly SemaphoreSlim _semaphore = new(1);
 
         /// <summary>
         /// Create an <see cref="OpenElectricityClient" /> with default settings
@@ -23,18 +23,9 @@ namespace OpenElectricity.Sdk
         /// <param name="options"></param>
         public OpenElectricityClient(OpenElectricityOptions options)
         {
-            HttpClientHandler handler = new()
-            {
-                UseCookies = true,
-                CookieContainer = new()
-            };
-            _httpClient = new(handler)
-            {
-                BaseAddress = options.BaseUrl,
-            };
-            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.ApiKey);
-
-            _serializerOptions = new StaticJsonSerializerOptions().Default;
+            var handler = HttpClientHelpers.GetDefaultMessageHandler();
+            _httpClient = new HttpClient(handler);
+            _httpClient.ConfigureDefaultHttpClient(options);
         }
 
         /// <summary>
@@ -45,9 +36,7 @@ namespace OpenElectricity.Sdk
         public OpenElectricityClient(HttpClient httpClient, IOptions<OpenElectricityOptions> options)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = options.Value.BaseUrl;
-            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.Value.ApiKey);
-            _serializerOptions = new StaticJsonSerializerOptions().Default;
+            _httpClient.ConfigureDefaultHttpClient(options.Value);
         }
 
         private async Task<T> SendAsync<T>(

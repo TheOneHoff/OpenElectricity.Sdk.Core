@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenElectricity.Sdk.Helpers;
 
 namespace OpenElectricity.Sdk
 {
@@ -38,12 +39,9 @@ namespace OpenElectricity.Sdk
 
         private static void RegisterOpenElectricityClient(this IServiceCollection services)
         {
-            services.AddHttpClient<OpenElectricityClient>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = new()
-                });
+            services
+                .AddHttpClient<OpenElectricityClient>()
+                .ConfigurePrimaryHttpMessageHandler(HttpClientHelpers.GetDefaultMessageHandler);
         }
     }
 }
