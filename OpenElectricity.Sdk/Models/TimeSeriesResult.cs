@@ -5,8 +5,10 @@ namespace OpenElectricity.Sdk.Models
     public class TimeSeriesResult
     {
         public required string Name { get; set; }
-        public DateTimeOffset Date_Start { get; set; }
-        public DateTimeOffset Date_End { get; set; }
+        [JsonPropertyName("date_start")]
+        public DateTimeOffset DateStart { get; set; }
+        [JsonPropertyName("date_end")]
+        public DateTimeOffset DateEnd { get; set; }
         public Dictionary<string, string> Columns { get; set; } = [];
         public List<List<object>> Data { get; set; } = [];
 

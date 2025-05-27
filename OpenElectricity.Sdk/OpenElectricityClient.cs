@@ -3,7 +3,6 @@ using OpenElectricity.Sdk.Models;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk
 {
@@ -13,14 +12,7 @@ namespace OpenElectricity.Sdk
         readonly string _apiKey;
         readonly JsonSerializerOptions _serializerOptions;
 
-        readonly List<HttpStatusCode> RedirectStatusCodes = 
-        [
-            HttpStatusCode.Redirect,
-            HttpStatusCode.MovedPermanently,
-            HttpStatusCode.Found,
-            HttpStatusCode.SeeOther,
-            HttpStatusCode.TemporaryRedirect
-        ];
+        const string DateTimeFormat = "s";
 
         /// <summary>
         /// Create an OpenElectricityClient with default settings
@@ -85,7 +77,7 @@ namespace OpenElectricity.Sdk
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unhandled exception when executing {request.RequestUri}. Response: {await response.Content.ReadAsStringAsync(cancellationToken)}", ex);
+                throw new Exception($"Unhandled exception when executing {request.RequestUri}", ex);
             }
 
             return result.Data;
@@ -141,10 +133,10 @@ namespace OpenElectricity.Sdk
             parameters.Add("network_region", networkRegion);
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<List<Facility>>(HttpMethod.Get, "facilities", parameters, cancellationToken);
+            return await SendAsync<List<Facility>>(HttpMethod.Get, "facilities/", parameters, cancellationToken);
         }
 
-        public async Task<NetworkData> GetMarketDataAsync(
+        public async Task<List<NetworkData>> GetMarketDataAsync(
             NetworkCode networkCode,
             List<MarketMetric> metrics,
             DataInterval interval,
@@ -157,15 +149,15 @@ namespace OpenElectricity.Sdk
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
-            parameters.Add("date_start", dateStart?.ToString("u"));
-            parameters.Add("date_end", dateEnd?.ToString("u"));
+            parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
+            parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("primary_grouping", primaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<NetworkData>(HttpMethod.Get, $"market/network/{networkCode}", parameters, cancellationToken);
+            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"market/network/{networkCode}", parameters, cancellationToken);
         }
 
-        public async Task<NetworkData> GetGenerationDataAsync(
+        public async Task<List<NetworkData>> GetGenerationDataAsync(
             NetworkCode networkCode,
             List<DataMetric> metrics,
             DataInterval interval,
@@ -179,16 +171,16 @@ namespace OpenElectricity.Sdk
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
-            parameters.Add("date_start", dateStart?.ToString("u"));
-            parameters.Add("date_end", dateEnd?.ToString("u"));
+            parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
+            parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("primary_grouping", primaryGrouping.ToString());
             parameters.Add("secondary_grouping", secondaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<NetworkData>(HttpMethod.Get, $"data/network/{networkCode}", parameters, cancellationToken);
+            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"data/network/{networkCode}", parameters, cancellationToken);
 
         }
-        public async Task<NetworkData> GetFacilityDataAsync(
+        public async Task<List<NetworkData>> GetFacilityDataAsync(
             NetworkCode networkCode,
             List<DataMetric> metrics,
             DataInterval interval,
@@ -202,11 +194,11 @@ namespace OpenElectricity.Sdk
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
             parameters.Add("facility_code", facilityCodes ?? []);
-            parameters.Add("date_start", dateStart?.ToString("u"));
-            parameters.Add("date_end", dateEnd?.ToString("u"));
+            parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
+            parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<NetworkData>(HttpMethod.Get, $"data/facilities/{networkCode}", parameters, cancellationToken);
+            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"data/facilities/{networkCode}", parameters, cancellationToken);
         }
     }
 }

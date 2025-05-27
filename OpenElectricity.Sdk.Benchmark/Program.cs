@@ -10,11 +10,15 @@ namespace OpenElectricity.Sdk.Benchmark
             var builder = Host.CreateApplicationBuilder(args);
             builder.Services.Configure<OpenElectricityOptions>(builder.Configuration.GetSection(nameof(OpenElectricityOptions)));
             builder.Services.AddHttpClient<OpenElectricityClient>();
-            builder.Services.AddHostedService<HostedTesting>();
+            builder.Services.AddScoped<HostedTesting>();
 
             var app = builder.Build();
-            
-            await app.RunAsync();
+
+            var scope = app.Services.CreateScope();
+            var testing = scope.ServiceProvider.GetService<HostedTesting>();
+            if (testing is null) return;
+
+            await testing.RunAsync();
             return;
         }
     }
