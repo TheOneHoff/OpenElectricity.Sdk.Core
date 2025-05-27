@@ -4,6 +4,9 @@ using OpenElectricity.Sdk.Helpers;
 
 namespace OpenElectricity.Sdk
 {
+    /// <summary>
+    /// Set of extension methods providing easier initialization using dependency injection
+    /// </summary>
     public static class OpenElectricityExtensions
     {
         /// <summary>
@@ -26,7 +29,7 @@ namespace OpenElectricity.Sdk
         /// Automatically reads from the <see cref="OpenElectricityOptions" /> section of the <see cref="IConfiguration" />
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="setupAction"></param>
+        /// <param name="configuration"></param>
         /// <returns>The <see cref="IServiceCollection" /> so that additional calls can be chained</returns>
         public static IServiceCollection UseOpenElectricityClient(
             this IServiceCollection services,
