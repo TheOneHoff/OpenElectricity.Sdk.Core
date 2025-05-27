@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Web;
 
-namespace OpenElectricity.Sdk
+namespace OpenElectricity.Sdk.Helpers
 {
     internal class UriQueryParams
     {

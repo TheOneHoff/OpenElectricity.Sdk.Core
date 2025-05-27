@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using OpenElectricity.Sdk.Helpers;
 using OpenElectricity.Sdk.Models;
 using System.Net;
 using System.Net.Http.Json;
@@ -9,28 +10,35 @@ namespace OpenElectricity.Sdk
     public class OpenElectricityClient
     {
         readonly HttpClient _httpClient;
-        readonly string _apiKey;
         readonly JsonSerializerOptions _serializerOptions;
 
         const string DateTimeFormat = "s";
 
+        bool hasfirstRequestFinished = false;
+        SemaphoreSlim _semaphore = new(1);
+
         /// <summary>
-        /// Create an OpenElectricityClient with default settings
+        /// Create an <see cref="OpenElectricityClient" /> with default settings
         /// </summary>
         /// <param name="options"></param>
         public OpenElectricityClient(OpenElectricityOptions options)
         {
-            _httpClient = new()
+            HttpClientHandler handler = new()
+            {
+                UseCookies = true,
+                CookieContainer = new()
+            };
+            _httpClient = new(handler)
             {
                 BaseAddress = options.BaseUrl,
             };
-            _apiKey = options.ApiKey;
-            
+            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.ApiKey);
+
             _serializerOptions = new StaticJsonSerializerOptions().Default;
         }
 
         /// <summary>
-        /// Create an OpenElectricityClient using dependency injection
+        /// Create an <see cref="OpenElectricityClient" /> using dependency injection
         /// </summary>
         /// <param name="httpClient"></param>
         /// <param name="options"></param>
@@ -38,18 +46,22 @@ namespace OpenElectricity.Sdk
         {
             _httpClient = httpClient;
             _httpClient.BaseAddress = options.Value.BaseUrl;
-            _apiKey = options.Value.ApiKey;
+            _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", options.Value.ApiKey);
             _serializerOptions = new StaticJsonSerializerOptions().Default;
         }
 
         private async Task<T> SendAsync<T>(
-            HttpMethod method,
-            string relativePath,
-            UriQueryParams queryParams,
-            CancellationToken cancellationToken)
+            HttpRequestMessage request,
+            CancellationToken cancellationToken = default)
         {
-            HttpRequestMessage request = new(method, $"{relativePath}{queryParams}");
-            request.Headers.Authorization = new("Bearer", _apiKey);
+            if (!hasfirstRequestFinished)
+            {
+                await _semaphore.WaitAsync(cancellationToken);
+                if (hasfirstRequestFinished)
+                {
+                    _semaphore.Release();
+                }
+            }
 
             var response = await _httpClient.SendAsync(request, cancellationToken);
             APIResponse<T> result;
@@ -74,10 +86,19 @@ namespace OpenElectricity.Sdk
                 {
                     throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
                 }
+
+                if (!hasfirstRequestFinished)
+                {
+                    hasfirstRequestFinished = true;
+                }
             }
             catch (Exception ex)
             {
                 throw new Exception($"Unhandled exception when executing {request.RequestUri}", ex);
+            }
+            finally
+            {
+                _semaphore.Release();
             }
 
             return result.Data;
@@ -96,10 +117,14 @@ namespace OpenElectricity.Sdk
             CancellationToken cancellationToken = default
             )
         {
+            ReadOnlySpan<char> route = "me";
+
             UriQueryParams parameters = new();
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<User>(HttpMethod.Get, "me", parameters, cancellationToken);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
+
+            return await SendAsync<User>(request, cancellationToken);
         }
 
         /// <summary>
@@ -125,6 +150,8 @@ namespace OpenElectricity.Sdk
             CancellationToken cancellationToken = default
             )
         {
+            ReadOnlySpan<char> route = "facilities/";
+
             UriQueryParams parameters = new();
             parameters.Add("facility_code", facilityCode ?? []);
             parameters.Add("status_id", statusId?.Select(s => s.ToString()) ?? []);
@@ -133,7 +160,9 @@ namespace OpenElectricity.Sdk
             parameters.Add("network_region", networkRegion);
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<List<Facility>>(HttpMethod.Get, "facilities/", parameters, cancellationToken);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
+
+            return await SendAsync<List<Facility>>(request, cancellationToken);
         }
 
         public async Task<List<NetworkData>> GetMarketDataAsync(
@@ -146,6 +175,8 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
+            ReadOnlySpan<char> route = $"market/network/{networkCode}";
+
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
@@ -154,7 +185,9 @@ namespace OpenElectricity.Sdk
             parameters.Add("primary_grouping", primaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"market/network/{networkCode}", parameters, cancellationToken);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
+
+            return await SendAsync<List<NetworkData>>(request, cancellationToken);
         }
 
         public async Task<List<NetworkData>> GetGenerationDataAsync(
@@ -168,6 +201,8 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
+            ReadOnlySpan<char> route = $"data/network/{networkCode}";
+
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
@@ -177,7 +212,9 @@ namespace OpenElectricity.Sdk
             parameters.Add("secondary_grouping", secondaryGrouping.ToString());
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"data/network/{networkCode}", parameters, cancellationToken);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
+
+            return await SendAsync<List<NetworkData>>(request, cancellationToken);
 
         }
         public async Task<List<NetworkData>> GetFacilityDataAsync(
@@ -190,6 +227,8 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
+            ReadOnlySpan<char> route = $"data/facilities/{networkCode}";
+
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
             parameters.Add("interval", interval.ToJsonString());
@@ -198,7 +237,9 @@ namespace OpenElectricity.Sdk
             parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("with_clerk", withClerk.ToString());
 
-            return await SendAsync<List<NetworkData>>(HttpMethod.Get, $"data/facilities/{networkCode}", parameters, cancellationToken);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
+
+            return await SendAsync<List<NetworkData>>(request, cancellationToken);
         }
     }
 }

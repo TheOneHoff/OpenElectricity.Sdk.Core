@@ -96,6 +96,9 @@ namespace OpenElectricity.Sdk.Benchmark
             NetworkCode networkCode = NetworkCode.NEM;
             DataMetric metric = DataMetric.energy;
 
+            //var me = await _client.GetUserAsync(cancellationToken: cancellationToken);
+
+            List<Task> tasks = [];
             DateTime currentStart = start;
             while(currentStart < end)
             {
@@ -105,10 +108,14 @@ namespace OpenElectricity.Sdk.Benchmark
                     currentEnd = end;
                 }
 
-                await Fetch30Days(folderPath, networkCode, metric, currentStart, currentEnd, cancellationToken);
+                var task = Fetch30Days(folderPath, networkCode, metric, currentStart, currentEnd, cancellationToken);
+                tasks.Add(task);
+                //await task;
 
                 currentStart = currentStart.AddDays(30);
             }
+
+            await Task.WhenAll(tasks);
 
             return;
         }

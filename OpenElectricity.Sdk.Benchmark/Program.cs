@@ -8,8 +8,8 @@ namespace OpenElectricity.Sdk.Benchmark
         static async Task Main(string[] args)
         {
             var builder = Host.CreateApplicationBuilder(args);
-            builder.Services.Configure<OpenElectricityOptions>(builder.Configuration.GetSection(nameof(OpenElectricityOptions)));
-            builder.Services.AddHttpClient<OpenElectricityClient>();
+
+            builder.Services.UseOpenElectricityClient(builder.Configuration);
             builder.Services.AddScoped<HostedTesting>();
 
             var app = builder.Build();

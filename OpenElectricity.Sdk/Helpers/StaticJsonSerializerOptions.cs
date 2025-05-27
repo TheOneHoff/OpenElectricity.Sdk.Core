@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OpenElectricity.Sdk
+namespace OpenElectricity.Sdk.Helpers
 {
     internal class StaticJsonSerializerOptions
     {
