@@ -140,8 +140,8 @@ namespace OpenElectricity.Sdk
             NetworkCode networkCode,
             List<MarketMetric> metrics,
             DataInterval interval,
-            DateTimeOffset? dateStart = null,
-            DateTimeOffset? dateEnd = null,
+            DateTime? dateStart = null,
+            DateTime? dateEnd = null,
             DataPrimaryGrouping? primaryGrouping = null,
             bool withClerk = true,
             CancellationToken cancellationToken = default)
@@ -161,8 +161,8 @@ namespace OpenElectricity.Sdk
             NetworkCode networkCode,
             List<DataMetric> metrics,
             DataInterval interval,
-            DateTimeOffset? dateStart = null,
-            DateTimeOffset? dateEnd = null,
+            DateTime? dateStart = null,
+            DateTime? dateEnd = null,
             DataPrimaryGrouping? primaryGrouping = null,
             DataSecondaryGrouping? secondaryGrouping = null,
             bool withClerk = true,
@@ -185,8 +185,8 @@ namespace OpenElectricity.Sdk
             List<DataMetric> metrics,
             DataInterval interval,
             List<string>? facilityCodes = null,
-            DateTimeOffset? dateStart = null,
-            DateTimeOffset? dateEnd = null,
+            DateTime? dateStart = null,
+            DateTime? dateEnd = null,
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {

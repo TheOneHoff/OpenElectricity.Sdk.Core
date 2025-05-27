@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk.Models
 {
@@ -10,7 +12,7 @@ namespace OpenElectricity.Sdk.Models
         [JsonPropertyName("date_end")]
         public DateTimeOffset DateEnd { get; set; }
         public Dictionary<string, string> Columns { get; set; } = [];
-        public List<List<object>> Data { get; set; } = [];
+        public List<List<JsonElement>> Data { get; set; } = [];
 
         [JsonIgnore]
         public List<TimeValue> TimeSeries
@@ -20,7 +22,9 @@ namespace OpenElectricity.Sdk.Models
                 List<TimeValue> timeSeries = [];
                 foreach(var entry in Data)
                 {
-                    timeSeries.Add(new((DateTimeOffset)entry[0], (decimal)entry[1]));
+                    DateTimeOffset timestamp = entry[0].GetDateTimeOffset();
+                    decimal value = entry[1].GetDecimal();
+                    timeSeries.Add(new(timestamp, value));
                 }
                 return timeSeries;
             }
