@@ -29,30 +29,9 @@ namespace OpenElectricity.Sdk.Models
         /// </summary>
         public Dictionary<string, string> Columns { get; set; } = [];
         /// <summary>
-        /// Structure used to deserialize the time series data using the built in deserializer.
-        /// Use the <see cref="TimeSeries"/> property if you want to work with the timeseries data.
-        /// This property will be deprecated in the next release.
+        /// Time series data
         /// </summary>
-        public List<List<JsonElement>> Data { get; set; } = [];
-
-        /// <summary>
-        /// Converts the <see cref="Data"/> property to a time series list.
-        /// </summary>
-        [JsonIgnore]
-        public List<TimeValue> TimeSeries
-        {
-            get
-            {
-                List<TimeValue> timeSeries = [];
-                foreach(var entry in Data)
-                {
-                    DateTimeOffset timestamp = entry[0].GetDateTimeOffset();
-                    decimal value = entry[1].GetDecimal();
-                    timeSeries.Add(new(timestamp, value));
-                }
-                return timeSeries;
-            }
-        }
+        public List<TimeValue> Data { get; set; } = [];
     }
 
     /// <summary>

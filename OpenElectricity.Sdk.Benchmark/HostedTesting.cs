@@ -138,7 +138,7 @@ namespace OpenElectricity.Sdk.Benchmark
                     dateEnd: end,
                     cancellationToken: cancellationToken);
 
-                var emissions = market_data.FirstOrDefault(r => r.Metric == (Metric)metric)?.Results.FirstOrDefault()?.TimeSeries ?? [];
+                var emissions = market_data.FirstOrDefault(r => r.Metric == (Metric)metric)?.Results.FirstOrDefault()?.Data ?? [];
 
                 string outputFile = $"{networkCode}.{metric}_{start:yyyyMMddHHmmss}-{end:yyyyMMddHHmmss}.csv";
 

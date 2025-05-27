@@ -14,6 +14,7 @@ namespace OpenElectricity.Sdk.Helpers
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             };
             _default.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower, false));
+            _default.Converters.Add(new TimeValueJsonConverter());
 
             return _default;
         }
