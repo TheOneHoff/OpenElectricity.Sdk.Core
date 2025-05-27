@@ -7,6 +7,10 @@ using System.Text.Json;
 
 namespace OpenElectricity.Sdk
 {
+    /// <summary>
+    /// A wrapper over the OpenElectricity API for .NET Core.
+    /// For more information about the API, visit <see href="https://docs.openelectricity.org.au/api-reference/overview"/>
+    /// </summary>
     public class OpenElectricityClient
     {
         readonly HttpClient _httpClient;
@@ -94,7 +98,8 @@ namespace OpenElectricity.Sdk
         }
 
         /// <summary>
-        /// Get the current user
+        /// Get the current user.
+        /// <see href="https://docs.openelectricity.org.au/api-reference/user/get-user-me"/>
         /// </summary>
         /// <param name="withClerk"></param>
         /// <param name="cancellationToken"></param>
@@ -117,7 +122,8 @@ namespace OpenElectricity.Sdk
         }
 
         /// <summary>
-        /// Get all approved facilities and their associated units
+        /// Get all approved facilities and their associated units.
+        /// <see href="https://docs.openelectricity.org.au/api-reference/facilities/get-facilities"/>
         /// </summary>
         /// <param name="facilityCode">Filter by facility code(s)</param>
         /// <param name="statusId">Filter by unit status(es)</param>
@@ -154,6 +160,21 @@ namespace OpenElectricity.Sdk
             return await SendAsync<List<Facility>>(request, cancellationToken);
         }
 
+        /// <summary>
+        /// Get market data for a network. 
+        /// <see href="https://docs.openelectricity.org.au/api-reference/market/get-network-data"/>
+        /// </summary>
+        /// <param name="networkCode"></param>
+        /// <param name="metrics"></param>
+        /// <param name="interval"></param>
+        /// <param name="dateStart"></param>
+        /// <param name="dateEnd"></param>
+        /// <param name="primaryGrouping"></param>
+        /// <param name="withClerk"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
+        /// <exception cref="JsonException">If there is an error when deserializing</exception>
         public async Task<List<NetworkData>> GetMarketDataAsync(
             NetworkCode networkCode,
             List<MarketMetric> metrics,
@@ -179,6 +200,22 @@ namespace OpenElectricity.Sdk
             return await SendAsync<List<NetworkData>>(request, cancellationToken);
         }
 
+        /// <summary>
+        /// Get time series data for a network.
+        /// <see href="https://docs.openelectricity.org.au/api-reference/data/get-network-data"/>
+        /// </summary>
+        /// <param name="networkCode"></param>
+        /// <param name="metrics"></param>
+        /// <param name="interval"></param>
+        /// <param name="dateStart"></param>
+        /// <param name="dateEnd"></param>
+        /// <param name="primaryGrouping"></param>
+        /// <param name="secondaryGrouping"></param>
+        /// <param name="withClerk"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
+        /// <exception cref="JsonException">If there is an error when deserializing</exception>
         public async Task<List<NetworkData>> GetGenerationDataAsync(
             NetworkCode networkCode,
             List<DataMetric> metrics,
@@ -206,6 +243,22 @@ namespace OpenElectricity.Sdk
             return await SendAsync<List<NetworkData>>(request, cancellationToken);
 
         }
+
+        /// <summary>
+        /// Get time series data for a specific facility.
+        /// <see href="https://docs.openelectricity.org.au/api-reference/data/get-facility-data"/>
+        /// </summary>
+        /// <param name="networkCode"></param>
+        /// <param name="metrics"></param>
+        /// <param name="interval"></param>
+        /// <param name="facilityCodes"></param>
+        /// <param name="dateStart"></param>
+        /// <param name="dateEnd"></param>
+        /// <param name="withClerk"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
+        /// <exception cref="JsonException">If there is an error when deserializing</exception>
         public async Task<List<NetworkData>> GetFacilityDataAsync(
             NetworkCode networkCode,
             List<DataMetric> metrics,
