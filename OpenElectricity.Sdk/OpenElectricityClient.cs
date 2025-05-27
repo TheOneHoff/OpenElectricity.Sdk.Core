@@ -189,7 +189,7 @@ namespace OpenElectricity.Sdk
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
-            parameters.Add("interval", interval.ToJsonString());
+            parameters.Add("interval", interval.ToJsonString(_serializerOptions));
             parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
             parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("primary_grouping", primaryGrouping.ToString());
@@ -231,7 +231,7 @@ namespace OpenElectricity.Sdk
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
-            parameters.Add("interval", interval.ToJsonString());
+            parameters.Add("interval", interval.ToJsonString(_serializerOptions));
             parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
             parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));
             parameters.Add("primary_grouping", primaryGrouping.ToString());
@@ -273,7 +273,7 @@ namespace OpenElectricity.Sdk
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
-            parameters.Add("interval", interval.ToJsonString());
+            parameters.Add("interval", interval.ToJsonString(_serializerOptions));
             parameters.Add("facility_code", facilityCodes ?? []);
             parameters.Add("date_start", dateStart?.ToString(DateTimeFormat));
             parameters.Add("date_end", dateEnd?.ToString(DateTimeFormat));

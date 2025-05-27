@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
+﻿using OpenElectricity.Sdk.Helpers;
 using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk.Models
@@ -39,6 +38,7 @@ namespace OpenElectricity.Sdk.Models
     /// </summary>
     /// <param name="timestamp"></param>
     /// <param name="value"></param>
+    [JsonConverter(typeof(TimeValueJsonConverter))]
     public struct TimeValue(DateTimeOffset timestamp, decimal value)
     {
         /// <summary>

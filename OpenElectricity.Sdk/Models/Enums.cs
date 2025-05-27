@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk.Models
 {
@@ -6,6 +7,7 @@ namespace OpenElectricity.Sdk.Models
     /// The id of the electrical network.
     /// <see href="https://docs.openelectricity.org.au/guides/networks"/>
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<NetworkCode>))]
     public enum NetworkCode
     {
         /// <summary>
@@ -28,6 +30,7 @@ namespace OpenElectricity.Sdk.Models
     /// The time interval to aggregate data by
     /// <see href="https://docs.openelectricity.org.au/api-reference/market/get-network-data#parameter-interval"/>
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<DataInterval>))]
     public enum DataInterval
     {
         /// <summary>
@@ -89,22 +92,18 @@ namespace OpenElectricity.Sdk.Models
         /// <see href="https://docs.openelectricity.org.au/api-reference/market/get-network-data#parameter-interval"/>
         /// </summary>
         /// <param name="dataInterval"></param>
+        /// <param name="serializerOptions"></param>
         /// <returns></returns>
-        public static string ToJsonString(this DataInterval dataInterval)
+        public static string ToJsonString(this DataInterval dataInterval, JsonSerializerOptions serializerOptions)
         {
-            Type type = typeof(DataInterval);
-            string? name = type.GetEnumName(dataInterval);
-            if (name is null) return "";
-            return type.GetField(name)?
-                .GetCustomAttributes(false)
-                .OfType<JsonStringEnumMemberNameAttribute>()
-                .SingleOrDefault()?.Name.ToString() ?? "";
+            return JsonSerializer.Serialize(dataInterval, serializerOptions)[1..^1];
         }
     }
 
     /// <summary>
     /// Primary grouping to apply
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<DataPrimaryGrouping>))]
     public enum DataPrimaryGrouping
     {
         /// <summary>
@@ -121,6 +120,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Optional secondary grouping to apply
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<DataSecondaryGrouping>))]
     public enum DataSecondaryGrouping
     {
         /// <summary>
@@ -143,6 +143,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Types of metrics that can be queried
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<Metric>))]
     public enum Metric
     {
         /// <summary>
@@ -183,6 +184,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Types of metrics that can be queried from generation data
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<DataMetric>))]
     public enum DataMetric
     {
         /// <summary>
@@ -209,6 +211,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Types of metrics that can be queried from market data
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<MarketMetric>))]
     public enum MarketMetric
     {
         /// <summary>
@@ -229,6 +232,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Status of unit in facility
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<UnitStatusType>))]
     public enum UnitStatusType
     {
         /// <summary>
@@ -260,6 +264,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Individual generation technologies
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<UnitFueltechType>))]
     public enum UnitFueltechType
     {
         /// <summary>
@@ -396,6 +401,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Broader categories that group similar <see cref="UnitFueltechType"/> technologies 
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<UnitFueltechGroupType>))]
     public enum UnitFueltechGroupType
     {
         /// <summary>
@@ -452,6 +458,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Broad categories that describe the facility role in the electrical network
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<UnitDispatchType>))]
     public enum UnitDispatchType
     {
         /// <summary>
@@ -478,6 +485,7 @@ namespace OpenElectricity.Sdk.Models
     /// <summary>
     /// Types of plans offered by OpenElectricity for connecting to the API
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<UserPlan>))]
     public enum UserPlan
     {
         /// <summary>
