@@ -106,7 +106,7 @@ namespace OpenElectricity.Sdk
             CancellationToken cancellationToken = default
             )
         {
-            ReadOnlySpan<char> route = "me";
+            string route = "me";
 
             UriQueryParams parameters = new();
             parameters.Add("with_clerk", withClerk.ToString());
@@ -139,7 +139,7 @@ namespace OpenElectricity.Sdk
             CancellationToken cancellationToken = default
             )
         {
-            ReadOnlySpan<char> route = "facilities/";
+            string route = "facilities/";
 
             UriQueryParams parameters = new();
             parameters.Add("facility_code", facilityCode ?? []);
@@ -164,7 +164,7 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
-            ReadOnlySpan<char> route = $"market/network/{networkCode}";
+            string route = $"market/network/{networkCode}";
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
@@ -190,7 +190,7 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
-            ReadOnlySpan<char> route = $"data/network/{networkCode}";
+            string route = $"data/network/{networkCode}";
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
@@ -216,7 +216,7 @@ namespace OpenElectricity.Sdk
             bool withClerk = true,
             CancellationToken cancellationToken = default)
         {
-            ReadOnlySpan<char> route = $"data/facilities/{networkCode}";
+            string route = $"data/facilities/{networkCode}";
 
             UriQueryParams parameters = new();
             parameters.Add("metrics", metrics.Select(m => m.ToString()));
