@@ -20,8 +20,15 @@ jobs:
         versionSpec: '6.3.x'
 
     - name: Determine Version
+      id: version_step
       uses: gittools/actions/gitversion/execute@v3
       with:
         useConfigFile: true
         updateProjectFiles: true
+
+    - name: Tag Release
+      run: |
+        git commit -a -m "Create release ${{ steps.version_step.outputs.MajorMinorPatch }}"
+        git tag v${{ steps.version_step.outputs.MajorMinorPatch }}
+        git push origin --tags
     
