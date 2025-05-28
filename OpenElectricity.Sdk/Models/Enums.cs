@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using OpenElectricity.Sdk.Helpers;
+using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace OpenElectricity.Sdk.Models
@@ -27,8 +29,8 @@ namespace OpenElectricity.Sdk.Models
     }
 
     /// <summary>
-    /// The time interval to aggregate data by
-    /// <see href="https://docs.openelectricity.org.au/api-reference/market/get-network-data#parameter-interval"/>
+    /// The time interval to aggregate data by.
+    /// For more info, visit <see href="https://docs.openelectricity.org.au/api-reference/market/get-network-data#parameter-interval"/>
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter<DataInterval>))]
     public enum DataInterval
@@ -37,48 +39,56 @@ namespace OpenElectricity.Sdk.Models
         /// 5m
         /// </summary>
         [JsonStringEnumMemberName("5m")]
+        [DayRange(7)]
         FiveMinute,
 
         /// <summary>
         /// 1h
         /// </summary>
         [JsonStringEnumMemberName("1h")]
+        [DayRange(30)]
         OneHour,
 
         /// <summary>
         /// 7d
         /// </summary>
         [JsonStringEnumMemberName("7d")]
+        [DayRange(365)] 
         SevenDay,
 
         /// <summary>
-        /// !M
+        /// 1M
         /// </summary>
         [JsonStringEnumMemberName("1M")]
+        [DayRange(730)] 
         OneMonth,
 
         /// <summary>
         /// 3M
         /// </summary>
         [JsonStringEnumMemberName("3M")]
+        [DayRange(1825)] 
         ThreeMonth,
 
         /// <summary>
         /// season
         /// </summary>
         [JsonStringEnumMemberName("season")]
+        [DayRange(1825)] 
         Season,
 
         /// <summary>
         /// 1y
         /// </summary>
         [JsonStringEnumMemberName("1y")]
+        [DayRange(3650)]
         OneYear,
 
         /// <summary>
-        /// fy
+        /// fy - Currently not in use
         /// </summary>
         [JsonStringEnumMemberName("fy")]
+        [DayRange(3650)]
         FinancialYear
     }
 
@@ -97,6 +107,22 @@ namespace OpenElectricity.Sdk.Models
         public static string ToJsonString(this DataInterval dataInterval, JsonSerializerOptions serializerOptions)
         {
             return JsonSerializer.Serialize(dataInterval, serializerOptions)[1..^1];
+        }
+
+        /// <summary>
+        /// Returns the max range (in days) that you can request with this <see cref="DataInterval"/>
+        /// </summary>
+        /// <param name="dataInterval"></param>
+        /// <returns></returns>
+        public static int? DayRange(this DataInterval dataInterval)
+        {
+            Type? type = dataInterval.GetType();
+            string? name = Enum.GetName(type, dataInterval);
+            if (name is null) return null;
+            FieldInfo? field = type.GetField(name);
+            if (field is null) return null;
+            DayRangeAttribute? attr = field.GetCustomAttribute<DayRangeAttribute>();
+            return attr?.Days;
         }
     }
 
