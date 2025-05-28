@@ -23,6 +23,5 @@ jobs:
       uses: gittools/actions/gitversion/execute@v3
       with:
         useConfigFile: true
-        updateAssemblyInfo: true
         updateProjectFiles: true
     
