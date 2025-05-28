@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using OpenElectricity.Sdk.Models;
+using OpenElectricity.Sdk.Client;
+using OpenElectricity.Sdk.Types;
 using System.Text;
 using System.Threading;
 
@@ -172,6 +173,42 @@ namespace OpenElectricity.Sdk.Benchmark
                 return false;
             }
             return true;
+        }
+
+        private async Task<List<NetworkData>> GetGenerationDataForDateRangeAsync(
+            NetworkCode networkCode,
+            List<DataMetric> metrics,
+            DataInterval interval,
+            DateTime dateStart,
+            DateTime dateEnd,
+            DataPrimaryGrouping? primaryGrouping = null,
+            DataSecondaryGrouping? secondaryGrouping = null,
+            bool withClerk = true,
+            CancellationToken cancellationToken = default
+
+            )
+        {
+            int dayRange = interval.DayRange() ?? throw new Exception($"Day range for interval {interval} is invalid");
+
+            List<Task<List<NetworkData>>> tasks = [];
+            DateTime currentStart = dateStart;
+            while(currentStart < dateEnd)
+            {
+                DateTime currentEnd = currentStart.AddDays(dayRange);
+                if (currentEnd > dateEnd)
+                {
+                    currentEnd = dateEnd;
+                }
+
+                Task<List<NetworkData>> task = _client.GetGenerationDataAsync(
+                    networkCode, metrics, interval, currentStart, currentEnd, 
+                    primaryGrouping, secondaryGrouping, withClerk, 
+                    cancellationToken);
+                tasks.Add(task);
+            }
+
+            List<NetworkData>[]? results = await Task.WhenAll(tasks);
+            return [..results.SelectMany(r => r)];
         }
     }
 }

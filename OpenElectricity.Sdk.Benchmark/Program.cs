@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenElectricity.Sdk.Client;
 
 namespace OpenElectricity.Sdk.Benchmark
 {
@@ -11,6 +12,8 @@ namespace OpenElectricity.Sdk.Benchmark
 
             builder.Services.UseOpenElectricityClient(builder.Configuration);
             builder.Services.AddScoped<HostedTesting>();
+
+            var builder2 = Host.CreateDefaultBuilder(args);
 
             var app = builder.Build();
 
