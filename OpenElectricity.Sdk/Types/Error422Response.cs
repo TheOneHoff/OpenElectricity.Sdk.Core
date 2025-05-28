@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace OpenElectricity.Sdk.Models
+namespace OpenElectricity.Sdk.Types
 {
     /// <summary>
     /// Error message when API returns <see cref="HttpStatusCode.UnprocessableContent"/>

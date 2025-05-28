@@ -1,4 +1,4 @@
-﻿namespace OpenElectricity.Sdk.Helpers
+﻿namespace OpenElectricity.Sdk.Abstractions
 {
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     internal class DayRangeAttribute(int days) : Attribute

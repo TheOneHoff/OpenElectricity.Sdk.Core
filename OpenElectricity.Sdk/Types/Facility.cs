@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace OpenElectricity.Sdk.Models
+namespace OpenElectricity.Sdk.Types
 {
     /// <summary>
     /// Facility response from GetFacilities

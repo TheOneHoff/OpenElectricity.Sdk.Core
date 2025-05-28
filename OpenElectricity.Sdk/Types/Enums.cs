@@ -1,9 +1,9 @@
-﻿using OpenElectricity.Sdk.Helpers;
+﻿using OpenElectricity.Sdk.Abstractions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OpenElectricity.Sdk.Models
+namespace OpenElectricity.Sdk.Types
 {
     /// <summary>
     /// The id of the electrical network.
@@ -116,12 +116,12 @@ namespace OpenElectricity.Sdk.Models
         /// <returns></returns>
         public static int? DayRange(this DataInterval dataInterval)
         {
-            Type? type = dataInterval.GetType();
+            var type = dataInterval.GetType();
             string? name = Enum.GetName(type, dataInterval);
             if (name is null) return null;
-            FieldInfo? field = type.GetField(name);
+            var field = type.GetField(name);
             if (field is null) return null;
-            DayRangeAttribute? attr = field.GetCustomAttribute<DayRangeAttribute>();
+            var attr = field.GetCustomAttribute<DayRangeAttribute>();
             return attr?.Days;
         }
     }

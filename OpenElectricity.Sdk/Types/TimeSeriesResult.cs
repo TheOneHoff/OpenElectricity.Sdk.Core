@@ -1,7 +1,7 @@
-﻿using OpenElectricity.Sdk.Helpers;
+﻿using OpenElectricity.Sdk.Abstractions;
 using System.Text.Json.Serialization;
 
-namespace OpenElectricity.Sdk.Models
+namespace OpenElectricity.Sdk.Types
 {
     /// <summary>
     /// 

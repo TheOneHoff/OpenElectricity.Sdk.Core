@@ -1,4 +1,4 @@
-﻿namespace OpenElectricity.Sdk
+﻿namespace OpenElectricity.Sdk.Client
 {
     /// <summary>
     /// Used to configure the OpenElectricityClient
