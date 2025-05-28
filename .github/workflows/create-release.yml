@@ -28,6 +28,8 @@ jobs:
 
     - name: Tag Release
       run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'TheOneHoff@users.noreply.github.com'
         git commit -a -m "Create release ${{ steps.version_step.outputs.MajorMinorPatch }}"
         git tag v${{ steps.version_step.outputs.MajorMinorPatch }}
         git push origin --tags
