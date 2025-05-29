@@ -1,16 +1,17 @@
-on:
-  workflow_call:
-    inputs:
-      dependency-config-path:
-        required: true
-        type: string
-      dotnet-version:
-        required: false
-        type: string
-        default: '9.0.x'
+name: Prepare dotnet dependencies
+description: Installs the dotnet CLI and restores packages
+inputs:
+  dependency-config-path:
+    required: true
+    type: string
+  dotnet-version:
+    required: false
+    type: string
+    default: '9.0.x'
 
-jobs:
-  prepare-dotnet:
+runs:
+  using: composite
+  steps:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
