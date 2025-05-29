@@ -11,6 +11,7 @@ env:
 
 jobs:
   create-release:
+    permissions: write-all
     runs-on: ubuntu-latest
     outputs:
       semver: ${{ steps.version_step.outputs.SemVer }}
