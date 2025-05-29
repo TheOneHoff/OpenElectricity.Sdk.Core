@@ -60,8 +60,8 @@ jobs:
           TAG: v${{ steps.version_step.outputs.SemVer }}
           VERSION: ${{ steps.version_step.outputs.SemVer }}
         run: |
-          gh release upload ${{ env.TAG }} ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
-          gh release upload ${{ env.TAG }} ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
+          gh release upload ${{ env.TAG }} ${{ github.workspace }}/OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
+          gh release upload ${{ env.TAG }} ${{ github.workspace }}/OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
 
       - name: Push to NuGet
         env:
@@ -75,6 +75,7 @@ jobs:
       #- name: Tag commit
       #  env: 
       #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #    TAG: v${{ steps.version_step.outputs.SemVer }}
       #  run: |
       #    git config --local user.email 'action@github.com'
       #    git config --local user.name 'GitHub Action'
