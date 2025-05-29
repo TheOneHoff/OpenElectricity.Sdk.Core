@@ -57,10 +57,11 @@ jobs:
       - name: Push to GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version_step.outputs.SemVer }}
           VERSION: ${{ steps.version_step.outputs.SemVer }}
         run: |
-          gh release upload ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
-          gh release upload ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
+          gh release upload ${{ env.TAG }} ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
+          gh release upload ${{ env.TAG }} ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
 
       - name: Push to NuGet
         env:
