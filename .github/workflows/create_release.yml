@@ -13,11 +13,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - Name: Pack Release
+      - name: Pack Release
         id: pack-release
         uses: ./.github/workflows/_pack-release.yml
 
-      #- Name: Tag commit
+      #- name: Tag commit
       #  env: 
       #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #  run: |

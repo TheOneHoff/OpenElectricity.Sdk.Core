@@ -15,6 +15,6 @@ jobs:
         with:
           fetch-depth: 0
           
-      - Name: Pack Release
+      - name: Pack Release
         id: pack-release
         uses: ./.github/workflows/_pack-release.yml
