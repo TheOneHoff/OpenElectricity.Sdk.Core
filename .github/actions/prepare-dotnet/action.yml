@@ -28,4 +28,5 @@ runs:
 
     - name: Restore dependencies
       if: steps.cache_deps.outputs.cache-hit != 'true'
+      shell: bash
       run: dotnet restore
