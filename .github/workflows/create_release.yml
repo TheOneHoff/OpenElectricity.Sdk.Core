@@ -49,15 +49,15 @@ jobs:
           ls
           cd bin
           ls
-          cd release
+          cd Release
           ls
 
       - name: Move packages
         env:
           VERSION: ${{ steps.version_step.outputs.SemVer }}
         run: |
-          mv ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg .
-          mv ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg .
+          mv ./OpenElectricity.Sdk/bin/Release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg .
+          mv ./OpenElectricity.Sdk/bin/Release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg .
 
       - name: Create GitHub release
         env:
