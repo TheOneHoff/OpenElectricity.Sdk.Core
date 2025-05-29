@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenElectricity.Sdk.Client;
 
 namespace OpenElectricity.Sdk.Benchmark
 {

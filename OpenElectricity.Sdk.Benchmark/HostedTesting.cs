@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using OpenElectricity.Sdk.Models;
+using OpenElectricity.Sdk.Client;
+using OpenElectricity.Sdk.Types;
 using System.Text;
-using System.Threading;
 
 namespace OpenElectricity.Sdk.Benchmark
 {
