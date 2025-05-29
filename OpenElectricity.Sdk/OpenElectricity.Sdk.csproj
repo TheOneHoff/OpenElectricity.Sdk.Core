@@ -6,14 +6,30 @@
 		<Nullable>enable</Nullable>
 		<PackageId>OpenElectricity.Sdk.Core</PackageId>
 		<Version>0.0.2</Version>
-		<Authors>theonehoff</Authors>
+		<Authors>TheOneHoff</Authors>
 		<Title>OpenElectricity.Sdk.Core</Title>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+    	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <IncludeSymbols>True</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageProjectUrl>https://github.com/TheOneHoff/OpenElectricity.Sdk.Core</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/TheOneHoff/OpenElectricity.Sdk.Core</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Options" />
 		<PackageReference Include="Microsoft.Extensions.Http" />
+	</ItemGroup>
+
+	<ItemGroup>
+		  <None Include="README.md">
+				<Pack>True</Pack>
+				<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+				<PackagePath>\</PackagePath>
+		  </None>
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,30 @@
+on:
+  workflow_call:
+    inputs:
+      dependency-config-path:
+        required: true
+        type: string
+      dotnet-version:
+        required: false
+        type: string
+        default: '9.0.x'
+
+jobs:
+  prepare-dotnet:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Cache dependencies
+      id: cache_deps
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os}}-nuget-${{ hashFiles(${{ inputs.dependency-config-path }}) }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      if: steps.cache_deps.outputs.cache-hit != 'true'
+      run: dotnet restore

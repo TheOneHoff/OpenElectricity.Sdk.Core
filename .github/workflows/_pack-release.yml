@@ -1,0 +1,32 @@
+on:
+  workflow_call:
+    outputs:
+      semver:
+        description: 'The semantic version of this run'
+        value: ${{ jobs.create-release.outputs.semver }}
+jobs:
+  create-release:
+    outputs:
+      semver: ${{ steps.version_step.outputs.SemVer }}
+
+    steps:
+      - name: Prepare .NET
+        uses: ./.github/workflows/_prepare-dotnet.yml
+        with:
+          dependency-config-path: '**/Directory.Packages.props'
+          dotnet-version: '9.0.x'
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3
+        with:
+          versionSpec: '6.3.x'
+
+      - name: Determine Version
+        id: version_step
+        uses: gittools/actions/gitversion/execute@v3
+        with:
+          useConfigFile: true
+          updateProjectFiles: true
+
+      - name: Create Package
+        run: dotnet pack --no-restore
