@@ -25,7 +25,8 @@ branches:
     - main
     tracks-release-branches: true
     is-release-branch: false
-    is-main-branch: false
+    is-main-branch: false    
+    pre-release-weight: 1
   main:
     label: ''
     increment: Patch
