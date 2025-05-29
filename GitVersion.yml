@@ -14,7 +14,8 @@ strategies:
 branches:
   develop:
     mode: ContinuousDelivery
-    label: alpha
+    label: beta
+    increment: Patch
     prevent-increment:
       when-current-commit-tagged: true
     track-merge-target: true

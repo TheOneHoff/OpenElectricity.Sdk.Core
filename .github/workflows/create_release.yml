@@ -4,20 +4,23 @@ on:
   push:
     branches:
       - main
-      - develop
 
 jobs:
   create-full-release:
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - Name: Pack Release
         id: pack-release
         uses: ./.github/workflows/_pack-release.yml
 
-      - Name: Tag commit
-        env: 
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --local user.email 'action@github.com'
-          git config --local user.name 'GitHub Action'
-          git tag v${{ steps.pack-release.outputs.semver }}
-          git push origin --tags
+      #- Name: Tag commit
+      #  env: 
+      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  run: |
+      #    git config --local user.email 'action@github.com'
+      #    git config --local user.name 'GitHub Action'
+      #    git tag v${{ steps.pack-release.outputs.semver }}
+      #    git push origin --tags

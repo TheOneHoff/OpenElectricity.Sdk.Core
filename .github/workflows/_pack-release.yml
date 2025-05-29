@@ -4,6 +4,11 @@ on:
       semver:
         description: 'The semantic version of this run'
         value: ${{ jobs.create-release.outputs.semver }}
+
+env:
+  NUGET_SERVER: https://api.nuget.org/v3/index.json
+
+
 jobs:
   create-release:
     outputs:
@@ -30,3 +35,28 @@ jobs:
 
       - name: Create Package
         run: dotnet pack --no-restore
+
+      - name: Create GitHub release
+        env:
+          TAG: v${{ steps.version_step.outputs.SemVer }}
+        run: |
+          gh release create "${{ env.TAG }}" \
+            --repo="${{ env.GITHUB_REPOSITORY }}" \
+            --title="${{ env.GITHUB_REPOSITORY }} ${{ env.TAG }}" \
+            --generate-notes
+
+      - name: Push to GitHub release
+        env:
+          VERSION: ${{ steps.version_step.outputs.SemVer }}
+        run: |
+          gh release upload ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
+          gh release upload ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
+
+      - name: Push to NuGet
+        env:
+          VERSION: ${{ steps.version_step.outputs.SemVer }}
+        run: |
+          dotnet push \
+            ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg \
+            -s ${{ env.NUGET_SERVER }} \
+            -k ${{ secrets.NUGET_TOKEN }}

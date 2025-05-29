@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PackageId>OpenElectricity.Sdk.Core</PackageId>
-		<Version>0.0.2</Version>
+		<Version>0.0.3-alpha.1</Version>
 		<Authors>TheOneHoff</Authors>
 		<Title>OpenElectricity.Sdk.Core</Title>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>

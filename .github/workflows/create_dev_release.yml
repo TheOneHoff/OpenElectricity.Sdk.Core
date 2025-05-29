@@ -1,0 +1,19 @@
+name: Create beta release
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - v**
+
+jobs:
+  create-full-release:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - Name: Pack Release
+        id: pack-release
+        uses: ./.github/workflows/_pack-release.yml
