@@ -43,15 +43,19 @@ jobs:
 
       - name: Create GitHub release
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ steps.version_step.outputs.SemVer }}
+          IS_PRERELEASE: ${{ contains('beta', env.TAG)}}
         run: |
           gh release create "${{ env.TAG }}" \
             --repo="${{ env.GITHUB_REPOSITORY }}" \
             --title="${{ env.GITHUB_REPOSITORY }} ${{ env.TAG }}" \
-            --generate-notes
+            --generate-notes \
+            ${{ env.IS_PRERELEASE && '--prerelease' || '--latest'}}
 
       - name: Push to GitHub release
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version_step.outputs.SemVer }}
         run: |
           gh release upload ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
@@ -65,6 +69,7 @@ jobs:
             ./OpenElectricity.Sdk/bin/release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg \
             -s ${{ env.NUGET_SERVER }} \
             -k ${{ secrets.NUGET_TOKEN }}
+
       #- name: Tag commit
       #  env: 
       #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
