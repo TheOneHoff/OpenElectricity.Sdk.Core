@@ -1,0 +1,100 @@
+name: Create full release
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+env:
+  NUGET_SERVER: https://api.nuget.org/v3/index.json
+
+jobs:
+  create-release:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.version_step.outputs.SemVer }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare .NET
+        uses: ./.github/actions/prepare-dotnet
+        with:
+          dependency-config-path: '**/Directory.Packages.props'
+          dotnet-version: '9.0.x'
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3
+        with:
+          versionSpec: '6.3.x'
+
+      - name: Determine Version
+        id: version_step
+        uses: gittools/actions/gitversion/execute@v3
+        with:
+          useConfigFile: true
+          updateProjectFiles: true
+
+      - name: Create Package
+        run: dotnet pack --no-restore
+
+      - name: Check folder struct
+        run: |
+          ls
+          cd OpenElectricity.Sdk
+          ls
+          cd bin
+          ls
+          cd Release
+          ls
+
+      - name: Move packages
+        env:
+          VERSION: ${{ steps.version_step.outputs.SemVer }}
+        run: |
+          mv ./OpenElectricity.Sdk/bin/Release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg .
+          mv ./OpenElectricity.Sdk/bin/Release/OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg .
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version_step.outputs.SemVer }}
+          IS_PRERELEASE: ${{ contains('beta', env.TAG)}}
+        run: |
+          gh release create "${{ env.TAG }}" \
+            --repo="${{ env.GITHUB_REPOSITORY }}" \
+            --title="${{ env.GITHUB_REPOSITORY }} ${{ env.TAG }}" \
+            --generate-notes \
+            ${{ env.IS_PRERELEASE && '--prerelease' || '--latest'}}
+
+      - name: Push to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version_step.outputs.SemVer }}
+          VERSION: ${{ steps.version_step.outputs.SemVer }}
+        run: |
+          gh release upload ${{ env.TAG }} OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg
+          gh release upload ${{ env.TAG }} OpenElectricity.Sdk.Core.${{ env.VERSION }}.snupkg
+
+      - name: Push to NuGet
+        env:
+          VERSION: ${{ steps.version_step.outputs.SemVer }}
+        run: |
+          dotnet nuget push \
+            OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg \
+            -s ${{ env.NUGET_SERVER }} \
+            -k ${{ secrets.NUGET_TOKEN }}
+
+      #- name: Tag commit
+      #  env: 
+      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #    TAG: v${{ steps.version_step.outputs.SemVer }}
+      #  run: |
+      #    git config --local user.email 'action@github.com'
+      #    git config --local user.name 'GitHub Action'
+      #    git tag v${{ steps.pack-release.outputs.semver }}
+      #    git push origin --tags

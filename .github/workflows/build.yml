@@ -6,23 +6,16 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+  
+    - name: Prepare .NET
+      uses: ./.github/actions/prepare-dotnet
       with:
-        dotnet-version: 9.0.x
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os}}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-    - name: Restore dependencies
-      run: dotnet restore
+        dependency-config-path: '**/Directory.Packages.props'
+        dotnet-version: '9.0.x'
+
     - name: Build
       run: dotnet build --no-restore
