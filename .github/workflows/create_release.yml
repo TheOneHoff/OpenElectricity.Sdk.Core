@@ -10,8 +10,8 @@ env:
   NUGET_SERVER: https://api.nuget.org/v3/index.json
 
 jobs:
-  runs-on: ubuntu-latest
   create-release:
+    runs-on: ubuntu-latest
     outputs:
       semver: ${{ steps.version_step.outputs.SemVer }}
 
