@@ -1,4 +1,6 @@
-﻿namespace OpenElectricity.Sdk.Helpers
+﻿using OpenElectricity.Sdk.Client;
+
+namespace OpenElectricity.Sdk.Helpers
 {
     internal static class HttpClientHelpers
     {

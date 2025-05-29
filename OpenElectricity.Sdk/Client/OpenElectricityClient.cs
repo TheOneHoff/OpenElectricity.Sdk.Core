@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using OpenElectricity.Sdk.Helpers;
-using OpenElectricity.Sdk.Models;
+using OpenElectricity.Sdk.Types;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace OpenElectricity.Sdk
+namespace OpenElectricity.Sdk.Client
 {
     /// <summary>
     /// A wrapper over the OpenElectricity API for .NET Core.
@@ -62,7 +62,7 @@ namespace OpenElectricity.Sdk
             {
                 if (response.StatusCode == HttpStatusCode.UnprocessableContent)
                 {
-                    Error422Response error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
+                    var error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
                         ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
 
                     throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.FirstOrDefault()?.Msg}");

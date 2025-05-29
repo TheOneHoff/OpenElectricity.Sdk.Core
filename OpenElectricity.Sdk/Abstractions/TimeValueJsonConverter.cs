@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenElectricity.Sdk.Models;
+using OpenElectricity.Sdk.Types;
 
-namespace OpenElectricity.Sdk.Helpers
+namespace OpenElectricity.Sdk.Abstractions
 {
     /// <summary>
     /// Custom JSON converter for <see cref="TimeValue"/>
@@ -28,7 +28,7 @@ namespace OpenElectricity.Sdk.Helpers
                 throw new JsonException();
             }
             reader.Read();
-            DateTimeOffset dateTimeOffset = reader.GetDateTimeOffset();
+            var dateTimeOffset = reader.GetDateTimeOffset();
             reader.Read();
             decimal value = reader.GetDecimal();
             reader.Read();

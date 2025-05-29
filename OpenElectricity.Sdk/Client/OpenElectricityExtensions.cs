@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenElectricity.Sdk.Helpers;
 
-namespace OpenElectricity.Sdk
+namespace OpenElectricity.Sdk.Client
 {
     /// <summary>
     /// Set of extension methods providing easier initialization using dependency injection
