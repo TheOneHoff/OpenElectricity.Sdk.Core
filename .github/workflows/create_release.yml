@@ -84,7 +84,7 @@ jobs:
         env:
           VERSION: ${{ steps.version_step.outputs.SemVer }}
         run: |
-          dotnet push \
+          dotnet nuget push \
             OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg \
             -s ${{ env.NUGET_SERVER }} \
             -k ${{ secrets.NUGET_TOKEN }}
