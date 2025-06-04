@@ -2,9 +2,11 @@ name: Prepare dotnet dependencies
 description: Installs the dotnet CLI and restores packages
 inputs:
   dependency-config-path:
+    description: "Path to the file containing project dependencies (e.g. packages.json, Directory.Packages.props, etc.)"
     required: true
     type: string
   dotnet-version:
+    description: ".NET Core Version"
     required: false
     type: string
     default: '9.0.x'
