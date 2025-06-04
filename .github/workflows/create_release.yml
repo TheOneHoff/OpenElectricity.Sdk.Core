@@ -59,7 +59,7 @@ jobs:
             --repo="${{ env.GITHUB_REPOSITORY }}" \
             --title="${{ env.GITHUB_REPOSITORY }} ${{ env.TAG }}" \
             --generate-notes \
-            ${{ env.IS_PRERELEASE && '--prerelease' || '--latest'}}
+            ${{ env.IS_PRERELEASE == 'false' && '--latest' || '--prerelease'}}
 
       - name: Push to GitHub release
         env:
