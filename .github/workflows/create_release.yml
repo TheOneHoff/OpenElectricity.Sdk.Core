@@ -42,16 +42,6 @@ jobs:
       - name: Create Package
         run: dotnet pack --no-restore
 
-      - name: Check folder struct
-        run: |
-          ls
-          cd OpenElectricity.Sdk
-          ls
-          cd bin
-          ls
-          cd Release
-          ls
-
       - name: Move packages
         env:
           VERSION: ${{ steps.version_step.outputs.SemVer }}
@@ -63,13 +53,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ steps.version_step.outputs.SemVer }}
-          IS_PRERELEASE: ${{ contains('beta', env.TAG)}}
+          IS_PRERELEASE: ${{ contains(env.TAG, 'beta') }}
         run: |
           gh release create "${{ env.TAG }}" \
             --repo="${{ env.GITHUB_REPOSITORY }}" \
             --title="${{ env.GITHUB_REPOSITORY }} ${{ env.TAG }}" \
             --generate-notes \
-            ${{ env.IS_PRERELEASE && '--prerelease' || '--latest'}}
+            ${{ env.IS_PRERELEASE == 'false' && '--latest' || '--prerelease'}}
 
       - name: Push to GitHub release
         env:
