@@ -1,0 +1,38 @@
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+tag-prefix: '[vV]?'
+commit-date-format: yyyy-MM-dd
+update-build-number: true
+semantic-version-format: Strict
+strategies:
+- Fallback
+- ConfiguredNextVersion
+- MergeMessage
+- TaggedCommit
+- TrackReleaseBranches
+- VersionInBranchName
+branches:
+  develop:
+    mode: ContinuousDelivery
+    label: beta
+    increment: Patch
+    prevent-increment:
+      when-current-commit-tagged: true
+    track-merge-target: true
+    track-merge-message: true
+    regex: ^dev(elop)?(ment)?$
+    source-branches:
+    - main
+    tracks-release-branches: true
+    is-release-branch: false
+    is-main-branch: false   
+    pre-release-weight: 0
+  main:
+    mode: ContinuousDeployment
+    label: ''
+    increment: Patch
+    regex: ^master$|^main$
+    tracks-release-branches: false
+    is-release-branch: false
+    is-main-branch: true
+    pre-release-weight: 55000

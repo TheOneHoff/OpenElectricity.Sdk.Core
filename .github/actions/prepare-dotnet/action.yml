@@ -1,0 +1,33 @@
+name: Prepare dotnet dependencies
+description: Installs the dotnet CLI and restores packages
+inputs:
+  dependency-config-path:
+    description: "Path to the file containing project dependencies (e.g. packages.json, Directory.Packages.props, etc.)"
+    required: true
+    type: string
+  dotnet-version:
+    description: ".NET Core Version"
+    required: false
+    type: string
+    default: '9.0.x'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Cache dependencies
+      id: cache_deps
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os}}-nuget-${{ hashFiles(inputs.dependency-config-path) }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      shell: bash
+      run: dotnet restore
