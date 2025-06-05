@@ -2,6 +2,7 @@
 using OpenElectricity.Sdk.Client;
 using OpenElectricity.Sdk.Types;
 using System.Text;
+using System.Threading;
 
 namespace OpenElectricity.Sdk.Benchmark
 {
@@ -187,27 +188,43 @@ namespace OpenElectricity.Sdk.Benchmark
 
             )
         {
+            return await GetAllForTimeRangeAsync((inter, start, end, token) =>
+            {
+                return _client.GetGenerationDataAsync(
+                    networkCode, metrics, inter, start, end,
+                    primaryGrouping, secondaryGrouping, withClerk,
+                    token);
+            },
+            interval, dateStart, dateEnd, cancellationToken);
+        }
+
+        private static async Task<List<NetworkData>> GetAllForTimeRangeAsync(
+            Func<DataInterval, DateTime, DateTime, CancellationToken, Task<List<NetworkData>>> getDataFunction,
+            DataInterval interval,
+            DateTime start, 
+            DateTime end,
+            CancellationToken cancellationToken = default
+            )
+        {
+
             int dayRange = interval.DayRange() ?? throw new Exception($"Day range for interval {interval} is invalid");
 
             List<Task<List<NetworkData>>> tasks = [];
-            DateTime currentStart = dateStart;
-            while(currentStart < dateEnd)
+            DateTime currentStart = start;
+            while (currentStart < end)
             {
                 DateTime currentEnd = currentStart.AddDays(dayRange);
-                if (currentEnd > dateEnd)
+                if (currentEnd > end)
                 {
-                    currentEnd = dateEnd;
+                    currentEnd = end;
                 }
 
-                Task<List<NetworkData>> task = _client.GetGenerationDataAsync(
-                    networkCode, metrics, interval, currentStart, currentEnd, 
-                    primaryGrouping, secondaryGrouping, withClerk, 
-                    cancellationToken);
+                Task<List<NetworkData>> task = getDataFunction(interval, currentStart, currentEnd, cancellationToken);
                 tasks.Add(task);
             }
 
             List<NetworkData>[]? results = await Task.WhenAll(tasks);
-            return [..results.SelectMany(r => r)];
+            return [.. results.SelectMany(r => r)];
         }
     }
 }
