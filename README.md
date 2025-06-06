@@ -141,8 +141,13 @@ namespace NewProject
 ```
 
 ## Development
+### Dependencies
+- .NET 9 SDK [dotnet.microsoft.com/download/dotnet](https://dotnet.microsoft.com/download/dotnet)
+- GitVersion [gitversion.com/installation](https://gitversion.net/docs/usage/cli/installation)
+
+### Workflow
 ```bash
-# Install dependencies
+# Install project dependencies
 dotnet restore
 
 # Build
