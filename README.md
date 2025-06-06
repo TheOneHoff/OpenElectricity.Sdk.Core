@@ -38,6 +38,10 @@ Generate an API key here [platform.openelectricity.org.au](https://platfrom.open
 > Only one client should be created per application to avoid port exhaustion [learn.microsoft.com/httpclient-guidelines](https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines)
 
 Create a new client and pass in your API key
+
+> [!WARNING]
+> Ensure that you do not hard code your API key. Use a secure provider to pass the key into the application
+
 ```C#
 using OpenElectricity.Sdk.Client;
 
@@ -62,6 +66,7 @@ namespace NewProject
     }
 }
 ```
+
 ### Dependency injection
 Create an appsettings.json with the following configuration
 ```JSON
@@ -70,6 +75,15 @@ Create an appsettings.json with the following configuration
     "ApiKey": "[YOUR API KEY HERE]",
   }
 }
+```
+
+**(Optional)** Use user secrets to pass the token to the configuration provider
+```bash
+# Intialize your user secrets
+dotnet user-secrets init
+
+# Set the secret
+dotnet user-secrets set "OpenElectricityOptions:ApiKey" "[YOUR API KEY HERE]"
 ```
 
 Create your class that uses the OpenElectricityClient
