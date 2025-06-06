@@ -53,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ steps.version_step.outputs.SemVer }}
-          IS_PRERELEASE: ${{ contains(env.TAG, 'beta') }}
+          IS_PRERELEASE: ${{ contains(steps.version_step.outputs.SemVer, 'beta') }}
         run: |
           gh release create "${{ env.TAG }}" \
             --repo="${{ env.GITHUB_REPOSITORY }}" \
@@ -78,13 +78,3 @@ jobs:
             OpenElectricity.Sdk.Core.${{ env.VERSION }}.nupkg \
             -s ${{ env.NUGET_SERVER }} \
             -k ${{ secrets.NUGET_TOKEN }}
-
-      #- name: Tag commit
-      #  env: 
-      #    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    TAG: v${{ steps.version_step.outputs.SemVer }}
-      #  run: |
-      #    git config --local user.email 'action@github.com'
-      #    git config --local user.name 'GitHub Action'
-      #    git tag v${{ steps.pack-release.outputs.semver }}
-      #    git push origin --tags

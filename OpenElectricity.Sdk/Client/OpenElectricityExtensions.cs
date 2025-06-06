@@ -14,14 +14,13 @@ namespace OpenElectricity.Sdk.Client
         /// </summary>
         /// <param name="services"></param>
         /// <param name="setupAction"></param>
-        /// <returns>The <see cref="IServiceCollection" /> so that additional calls can be chained</returns>
-        public static IServiceCollection UseOpenElectricityClient(
+        /// <returns>The <see cref="IHttpClientBuilder" /> so that additional calls can be chained</returns>
+        public static IHttpClientBuilder UseOpenElectricityClient(
             this IServiceCollection services, 
             Action<OpenElectricityOptions> setupAction)
         {
             services.Configure(setupAction);
-            services.RegisterOpenElectricityClient();
-            return services;
+            return services.RegisterOpenElectricityClient();
         }
 
         /// <summary>
@@ -30,19 +29,18 @@ namespace OpenElectricity.Sdk.Client
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
-        /// <returns>The <see cref="IServiceCollection" /> so that additional calls can be chained</returns>
-        public static IServiceCollection UseOpenElectricityClient(
+        /// <returns>The <see cref="IHttpClientBuilder" /> so that additional calls can be chained</returns>
+        public static IHttpClientBuilder UseOpenElectricityClient(
             this IServiceCollection services,
             IConfiguration configuration)
         {
             services.Configure<OpenElectricityOptions>(configuration.GetSection(nameof(OpenElectricityOptions)));
-            services.RegisterOpenElectricityClient();
-            return services;
+            return services.RegisterOpenElectricityClient();
         }
 
-        private static void RegisterOpenElectricityClient(this IServiceCollection services)
+        private static IHttpClientBuilder RegisterOpenElectricityClient(this IServiceCollection services)
         {
-            services
+            return services
                 .AddHttpClient<OpenElectricityClient>()
                 .ConfigurePrimaryHttpMessageHandler(HttpClientHelpers.GetDefaultMessageHandler);
         }
