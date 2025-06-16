@@ -159,6 +159,10 @@ namespace OpenElectricity.Sdk.Client
             }
 
             List<NetworkData>[]? results = await Task.WhenAll(tasks);
+
+            // BUG: Currently this just combines the responses of all the separate requests into a list
+            // EXPECTED: Combines List<TimeValue> together based on NetworkData.NetworkCode + NetworkData.Groupings + TimeSeriesResult.Name + TimeSeriesResult.Columns
+
             return [.. results.SelectMany(r => r)];
         }
     }
