@@ -267,6 +267,11 @@ namespace OpenElectricity.Sdk.Types
         announced,
 
         /// <summary>
+        /// Under Construction
+        /// </summary>
+        committed,
+
+        /// <summary>
         /// Being tested
         /// </summary>
         commissioning,
