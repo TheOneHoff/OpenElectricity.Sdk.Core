@@ -2,7 +2,6 @@
 using OpenElectricity.Sdk.Client;
 using OpenElectricity.Sdk.Types;
 using System.Text;
-using System.Threading;
 
 namespace OpenElectricity.Sdk.Benchmark
 {
@@ -96,45 +95,34 @@ namespace OpenElectricity.Sdk.Benchmark
         {
             NetworkCode networkCode = NetworkCode.NEM;
             DataMetric metric = DataMetric.energy;
+            DataInterval interval = DataInterval.OneHour;
 
-            //var me = await _client.GetUserAsync(cancellationToken: cancellationToken);
+            User? me = await _client.GetUserAsync(cancellationToken: cancellationToken);
 
-            List<Task> tasks = [];
-            DateTime currentStart = start;
-            while(currentStart < end)
-            {
-                DateTime currentEnd = currentStart.AddDays(30);
-                if (currentEnd > end)
-                {
-                    currentEnd = end;
-                }
+            _logger.LogInformation("User token granted for {username}", me.Email);
 
-                var task = Fetch30Days(folderPath, networkCode, metric, currentStart, currentEnd, cancellationToken);
-                tasks.Add(task);
-                //await task;
+            bool result = await FetchAll(folderPath, networkCode, metric, interval, start, end, cancellationToken);
 
-                currentStart = currentStart.AddDays(30);
-            }
-
-            await Task.WhenAll(tasks);
+            _logger.LogInformation("Result is {result}", result);
 
             return;
         }
 
-        private async Task<bool> Fetch30Days(
+        private async Task<bool> FetchAll(
             string folderPath,
             NetworkCode networkCode, 
             DataMetric metric, 
+            DataInterval interval,
             DateTime start, 
             DateTime end,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                var market_data = await _client.GetGenerationDataAsync(
+                var market_data = await _client.GetGenerationDataForDateRangeAsync(
                     networkCode: networkCode,
                     metrics: [metric],
-                    interval: DataInterval.OneHour,
+                    interval: interval,
                     dateStart: start,
                     dateEnd: end,
                     cancellationToken: cancellationToken);
@@ -173,58 +161,6 @@ namespace OpenElectricity.Sdk.Benchmark
                 return false;
             }
             return true;
-        }
-
-        private async Task<List<NetworkData>> GetGenerationDataForDateRangeAsync(
-            NetworkCode networkCode,
-            List<DataMetric> metrics,
-            DataInterval interval,
-            DateTime dateStart,
-            DateTime dateEnd,
-            DataPrimaryGrouping? primaryGrouping = null,
-            DataSecondaryGrouping? secondaryGrouping = null,
-            bool withClerk = true,
-            CancellationToken cancellationToken = default
-
-            )
-        {
-            return await GetAllForTimeRangeAsync((inter, start, end, token) =>
-            {
-                return _client.GetGenerationDataAsync(
-                    networkCode, metrics, inter, start, end,
-                    primaryGrouping, secondaryGrouping, withClerk,
-                    token);
-            },
-            interval, dateStart, dateEnd, cancellationToken);
-        }
-
-        private static async Task<List<NetworkData>> GetAllForTimeRangeAsync(
-            Func<DataInterval, DateTime, DateTime, CancellationToken, Task<List<NetworkData>>> getDataFunction,
-            DataInterval interval,
-            DateTime start, 
-            DateTime end,
-            CancellationToken cancellationToken = default
-            )
-        {
-
-            int dayRange = interval.DayRange() ?? throw new Exception($"Day range for interval {interval} is invalid");
-
-            List<Task<List<NetworkData>>> tasks = [];
-            DateTime currentStart = start;
-            while (currentStart < end)
-            {
-                DateTime currentEnd = currentStart.AddDays(dayRange);
-                if (currentEnd > end)
-                {
-                    currentEnd = end;
-                }
-
-                Task<List<NetworkData>> task = getDataFunction(interval, currentStart, currentEnd, cancellationToken);
-                tasks.Add(task);
-            }
-
-            List<NetworkData>[]? results = await Task.WhenAll(tasks);
-            return [.. results.SelectMany(r => r)];
         }
     }
 }

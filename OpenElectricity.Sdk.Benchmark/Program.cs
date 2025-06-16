@@ -23,7 +23,7 @@ namespace OpenElectricity.Sdk.Benchmark
 
             await testing.RunCarbonDataFetchAsync(
                 DateTime.Parse("2023-01-01"),
-                DateTime.Parse("2025-01-01"),
+                DateTime.Parse("2023-04-01"),
                 "C:\\Users\\AlexHoffman\\Downloads\\OpenElectricityData"
                 );
             return;
