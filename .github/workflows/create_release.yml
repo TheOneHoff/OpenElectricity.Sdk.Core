@@ -53,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: v${{ steps.version_step.outputs.SemVer }}
-          IS_PRERELEASE: ${{ contains(env.TAG, 'beta') }}
+          IS_PRERELEASE: ${{ contains(steps.version_step.outputs.SemVer, 'beta') }}
         run: |
           gh release create "${{ env.TAG }}" \
             --repo="${{ env.GITHUB_REPOSITORY }}" \
