@@ -87,7 +87,7 @@ namespace OpenElectricity.Sdk.Client
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unhandled exception when executing {request.RequestUri}", ex);
+                throw new Exception($"Unhandled exception when executing {request.RequestUri}; {await response.Content.ReadAsStringAsync(cancellationToken)}", ex);
             }
             finally
             {
