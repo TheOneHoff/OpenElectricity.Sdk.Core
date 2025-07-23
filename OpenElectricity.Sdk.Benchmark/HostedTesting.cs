@@ -99,7 +99,7 @@ namespace OpenElectricity.Sdk.Benchmark
 
             User? me = await _client.GetUserAsync(cancellationToken: cancellationToken);
 
-            _logger.LogInformation("User token granted for {username}", me.Email);
+            _logger.LogInformation("User token granted for {username}", me?.Email ?? "[Unable to get user details]");
 
             bool result = await FetchAll(folderPath, networkCode, metric, interval, start, end, cancellationToken);
 
@@ -119,7 +119,8 @@ namespace OpenElectricity.Sdk.Benchmark
         {
             try
             {
-                var market_data = await _client.GetGenerationDataForDateRangeAsync(
+
+                var market_data = _client.GetGenerationDataForDateRangeAsync(
                     networkCode: networkCode,
                     metrics: [metric],
                     interval: interval,
@@ -127,30 +128,38 @@ namespace OpenElectricity.Sdk.Benchmark
                     dateEnd: end,
                     cancellationToken: cancellationToken);
 
-                var emissions = market_data.FirstOrDefault(r => r.Metric == (Metric)metric)?.Results.FirstOrDefault()?.Data ?? [];
-
-                string outputFile = $"{networkCode}.{metric}_{start:yyyyMMddHHmmss}-{end:yyyyMMddHHmmss}.csv";
-
-                string filePath = Path.Combine(folderPath, outputFile);
-                FileInfo file = new(filePath);
-                if (file.Directory is not null && !file.Directory.Exists)
+                await foreach (var page in market_data)
                 {
-                    Directory.CreateDirectory(file.Directory.FullName);
-                }
-                if (file.Exists)
-                {
-                    File.Delete(file.FullName);
-                }
+                    var network = page.FirstOrDefault();
+                    if (network is null) continue;
 
-                using FileStream fileStream = new(file.FullName, FileMode.Create, FileAccess.ReadWrite);
-                using StreamWriter streamWriter = new(fileStream, Encoding.UTF8);
+                    DateTimeOffset page_start = network.DateStart;
+                    DateTimeOffset page_end = network.DateEnd;
+                    var data = network?.Results.FirstOrDefault()?.Data ?? [];
 
-                string header = "Region, DateTime, Value";
-                streamWriter.WriteLine(header);
+                    string outputFile = $"{networkCode}.{metric}_{page_start:yyyyMMddHHmmss}-{page_end:yyyyMMddHHmmss}.csv";
 
-                foreach (var tv in emissions)
-                {
-                    streamWriter.WriteLine($"{tv.Timestamp:s}, {tv.Value}");
+                    string filePath = Path.Combine(folderPath, outputFile);
+                    FileInfo file = new(filePath);
+                    if (file.Directory is not null && !file.Directory.Exists)
+                    {
+                        Directory.CreateDirectory(file.Directory.FullName);
+                    }
+                    if (file.Exists)
+                    {
+                        File.Delete(file.FullName);
+                    }
+
+                    using FileStream fileStream = new(file.FullName, FileMode.Create, FileAccess.ReadWrite);
+                    using StreamWriter streamWriter = new(fileStream, Encoding.UTF8);
+
+                    string header = "Region, DateTime, Value";
+                    streamWriter.WriteLine(header);
+
+                    foreach (var tv in data)
+                    {
+                        streamWriter.WriteLine($"{tv.Timestamp:s}, {tv.Value}");
+                    }
                 }
 
                 _logger.LogDebug("GetMarketData success");
