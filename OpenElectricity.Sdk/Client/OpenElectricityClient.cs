@@ -157,7 +157,7 @@ namespace OpenElectricity.Sdk.Client
         /// <returns></returns>
         /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
         /// <exception cref="JsonException">If there is an error when deserializing</exception>
-        public async Task<User> GetUserAsync(
+        public async Task<User?> GetUserAsync(
             bool withClerk = true,
             CancellationToken cancellationToken = default
             )
@@ -208,7 +208,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<Facility>>(request, cancellationToken);
+            return await SendAsync<List<Facility>>(request, cancellationToken) ?? [];
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
 
         }
 
@@ -332,7 +332,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
         }
     }
 }
