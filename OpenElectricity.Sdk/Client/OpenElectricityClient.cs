@@ -4,6 +4,7 @@ using OpenElectricity.Sdk.Types;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading;
 
 namespace OpenElectricity.Sdk.Client
 {
@@ -43,7 +44,49 @@ namespace OpenElectricity.Sdk.Client
             _httpClient.ConfigureDefaultHttpClient(options.Value);
         }
 
-        private async Task<T> SendAsync<T>(
+        /// <summary>
+        /// Handles sending the request
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="JsonException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
+        /// <exception cref="Exception"></exception>
+        private async Task<T?> SendAsync<T>(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken = default)
+        {
+            using HttpResponseMessage response = await SendAsync(request, cancellationToken);
+            APIResponse<T> result;
+            try 
+            { 
+                result = await DeserializeAsync<T>(response, cancellationToken);
+            }
+            catch(HttpRequestException)
+            {
+                throw;
+            }
+            catch (JsonException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unhandled exception when executing {request.RequestUri}; Response was {await response.Content.ReadAsStringAsync(cancellationToken)}", ex);
+            }
+
+            return result.Data;
+        }
+
+        /// <summary>
+        /// Handles sending the actual request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken = default)
         {
@@ -56,45 +99,53 @@ namespace OpenElectricity.Sdk.Client
                 }
             }
 
-            var response = await _httpClient.SendAsync(request, cancellationToken);
-            APIResponse<T> result;
-            try
-            {
-                if (response.StatusCode == HttpStatusCode.UnprocessableContent)
-                {
-                    var error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
-                        ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+            HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 
-                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.FirstOrDefault()?.Msg}");
-                }
-
-                result = await response.Content.ReadFromJsonAsync<APIResponse<T>>(_serializerOptions, cancellationToken)
-                    ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
-
-                if (!result.Success)
-                {
-                    throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {result.Error}");
-                }
-                if (result.Data is null)
-                {
-                    throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
-                }
-
-                if (!hasfirstRequestFinished)
-                {
-                    hasfirstRequestFinished = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Unhandled exception when executing {request.RequestUri}", ex);
-            }
-            finally
+            if (!hasfirstRequestFinished)
             {
                 _semaphore.Release();
+                hasfirstRequestFinished = true;
             }
 
-            return result.Data;
+            return response;
+        }
+
+
+        /// <summary>
+        /// Handles the deserialization of HttpResponseMessage using the defined types
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="response"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="JsonException"></exception>
+        /// <exception cref="HttpRequestException"></exception>
+        private async Task<APIResponse<T>> DeserializeAsync<T>(
+            HttpResponseMessage response,
+            CancellationToken cancellationToken = default)
+        {
+            APIResponse<T> result;
+            if (response.StatusCode == HttpStatusCode.UnprocessableContent)
+            {
+                var error = await response.Content.ReadFromJsonAsync<Error422Response>(_serializerOptions, cancellationToken)
+                    ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+
+                throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {error.Detail?.FirstOrDefault()?.Msg}");
+            }
+
+            result = await response.Content.ReadFromJsonAsync<APIResponse<T>>(_serializerOptions, cancellationToken)
+                ?? throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+
+            if (!result.Success)
+            {
+                throw new HttpRequestException($"Request failed with status code {response.StatusCode}. Reason: {result.Error}");
+            }
+            if (result.Data is null)
+            {
+                throw new JsonException($"Unable to deserialize response with status code {response.StatusCode}");
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -106,7 +157,7 @@ namespace OpenElectricity.Sdk.Client
         /// <returns></returns>
         /// <exception cref="HttpRequestException">If there is an error during the request, or if the request returns an error status code</exception>
         /// <exception cref="JsonException">If there is an error when deserializing</exception>
-        public async Task<User> GetUserAsync(
+        public async Task<User?> GetUserAsync(
             bool withClerk = true,
             CancellationToken cancellationToken = default
             )
@@ -157,7 +208,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<Facility>>(request, cancellationToken);
+            return await SendAsync<List<Facility>>(request, cancellationToken) ?? [];
         }
 
         /// <summary>
@@ -197,7 +248,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
         }
 
         /// <summary>
@@ -240,7 +291,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
 
         }
 
@@ -281,7 +332,7 @@ namespace OpenElectricity.Sdk.Client
 
             HttpRequestMessage request = new(HttpMethod.Get, $"{route}{parameters}");
 
-            return await SendAsync<List<NetworkData>>(request, cancellationToken);
+            return await SendAsync<List<NetworkData>>(request, cancellationToken) ?? [];
         }
     }
 }
