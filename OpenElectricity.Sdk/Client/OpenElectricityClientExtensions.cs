@@ -22,7 +22,7 @@ namespace OpenElectricity.Sdk.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async IAsyncEnumerable<List<NetworkData>> GetMarketDataForDateRangeAsync(
+        public static IEnumerable<Task<List<NetworkData>>> GetMarketData(
             this OpenElectricityClient client,
             NetworkCode networkCode,
             List<MarketMetric> metrics,
@@ -31,22 +31,17 @@ namespace OpenElectricity.Sdk.Client
             DateTime dateEnd,
             DataPrimaryGrouping? primaryGrouping = null,
             bool withClerk = true,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default
+            CancellationToken cancellationToken = default
             )
         {
-            var enumerator = GetAllForDateRangeAsync((inter, start, end, token) =>
+            return GenerateTasksForDateRange((inter, start, end) =>
             {
                 return client.GetMarketDataAsync(
                     networkCode, metrics, inter, start, end,
                     primaryGrouping, withClerk,
-                    token);
+                    cancellationToken);
             },
-            interval, dateStart, dateEnd, cancellationToken);
-
-            await foreach (var page in enumerator)
-            {
-                yield return page;
-            }
+            interval, dateStart, dateEnd);
         }
 
         /// <summary>
@@ -64,7 +59,7 @@ namespace OpenElectricity.Sdk.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async IAsyncEnumerable<List<NetworkData>> GetGenerationDataForDateRangeAsync(
+        public static IEnumerable<Task<List<NetworkData>>> GetGenerationData(
             this OpenElectricityClient client,
             NetworkCode networkCode,
             List<DataMetric> metrics,
@@ -74,22 +69,17 @@ namespace OpenElectricity.Sdk.Client
             DataPrimaryGrouping? primaryGrouping = null,
             DataSecondaryGrouping? secondaryGrouping = null,
             bool withClerk = true,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default
+            CancellationToken cancellationToken = default
             )
         {
-            var enumerator = GetAllForDateRangeAsync((inter, start, end, token) =>
+            return GenerateTasksForDateRange((inter, start, end) =>
             {
                 return client.GetGenerationDataAsync(
                     networkCode, metrics, inter, start, end,
                     primaryGrouping, secondaryGrouping, withClerk,
-                    token);
+                    cancellationToken);
             },
-            interval, dateStart, dateEnd, cancellationToken);
-
-            await foreach(var page in enumerator)
-            {
-                yield return page;
-            }
+            interval, dateStart, dateEnd);
         }
 
         /// <summary>
@@ -105,7 +95,7 @@ namespace OpenElectricity.Sdk.Client
         /// <param name="withClerk"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async IAsyncEnumerable<List<NetworkData>> GetFacilityDataForDateRangeAsync(
+        public static IEnumerable<Task<List<NetworkData>>> GetFacilityDataForDateRangeAsync(
             this OpenElectricityClient client,
             NetworkCode networkCode,
             List<DataMetric> metrics,
@@ -114,22 +104,17 @@ namespace OpenElectricity.Sdk.Client
             DateTime dateEnd,
             List<string>? facilityCodes = null,
             bool withClerk = true,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default
+            CancellationToken cancellationToken = default
             )
         {
-            var enumerator = GetAllForDateRangeAsync((inter, start, end, token) =>
+            return GenerateTasksForDateRange((inter, start, end) =>
             {
                 return client.GetFacilityDataAsync(
                     networkCode, metrics, inter, facilityCodes, 
                     start, end, withClerk,
-                    token);
+                    cancellationToken);
             },
-            interval, dateStart, dateEnd, cancellationToken);
-
-            await foreach (var page in enumerator)
-            {
-                yield return page;
-            }
+            interval, dateStart, dateEnd);
         }
 
         /// <summary>
@@ -139,15 +124,13 @@ namespace OpenElectricity.Sdk.Client
         /// <param name="interval"></param>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async IAsyncEnumerable<List<NetworkData>> GetAllForDateRangeAsync(
-            Func<DataInterval, DateTime, DateTime, CancellationToken, Task<List<NetworkData>>> getDataFunction,
+        public static IEnumerable<Task<List<NetworkData>>> GenerateTasksForDateRange(
+            Func<DataInterval, DateTime, DateTime, Task<List<NetworkData>>> getDataFunction,
             DataInterval interval,
             DateTime start,
-            DateTime end,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default
+            DateTime end
             )
         {
             int dayRange = interval.DayRange() ?? throw new Exception($"Day range for interval {interval} is invalid");
@@ -156,7 +139,6 @@ namespace OpenElectricity.Sdk.Client
                 throw new Exception($"Day range of [{dayRange}] for interval {interval} is invalid");
             }
 
-            List<Task<List<NetworkData>>> tasks = [];
             DateTime currentStart = start;
             while (currentStart < end)
             {
@@ -166,14 +148,10 @@ namespace OpenElectricity.Sdk.Client
                     currentEnd = end;
                 }
 
-                Task<List<NetworkData>> task = getDataFunction(interval, currentStart, currentEnd, cancellationToken);
-                tasks.Add(task);
+                Task<List<NetworkData>> task = getDataFunction(interval, currentStart, currentEnd);
                 currentStart = currentEnd;
-            }
 
-            await foreach(var response in Task.WhenEach(tasks))
-            {
-                yield return await response;
+                yield return task;
             }
         }
     }
