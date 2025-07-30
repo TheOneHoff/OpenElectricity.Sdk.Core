@@ -120,7 +120,7 @@ namespace OpenElectricity.Sdk.Benchmark
             try
             {
 
-                var market_data = _client.GetGenerationDataForDateRangeAsync(
+                var market_data = _client.GetGenerationData(
                     networkCode: networkCode,
                     metrics: [metric],
                     interval: interval,
@@ -128,9 +128,9 @@ namespace OpenElectricity.Sdk.Benchmark
                     dateEnd: end,
                     cancellationToken: cancellationToken);
 
-                await foreach (var page in market_data)
+                foreach (var page in market_data)
                 {
-                    var network = page.FirstOrDefault();
+                    var network = (await page).FirstOrDefault();
                     if (network is null) continue;
 
                     DateTimeOffset page_start = network.DateStart;
